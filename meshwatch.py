@@ -84,7 +84,7 @@ from sys import exit
 # Variable Declaration                                                       --
 #------------------------------------------------------------------------------
 
-NAME = 'MeshWatch'                   
+NAME = 'MeshWatch'
 DESCRIPTION = "Send and recieve messages to a MeshTastic device"
 DEBUG = False
 
@@ -202,8 +202,8 @@ class TextWindow(object):
       self.StartColumn  = 0
 
 
-  
-  def ScrollPrint(self,PrintLine,Color=2,TimeStamp=False,BoldLine=True): 
+
+  def ScrollPrint(self,PrintLine,Color=2,TimeStamp=False,BoldLine=True):
     #print(PrintLine)
     #for now the string is printed in the window and the current row is incremented
     #when the counter reaches the end of the window, we will wrap around to the top
@@ -217,24 +217,24 @@ class TextWindow(object):
 
     #expand tabs to X spaces, pad the string with space
     PrintLine = PrintLine.expandtabs(4)
-    
+
     #adjust strings
     #Get a part of the big string that will fit in the window
     PrintableString = ''
     RemainingString = ''
     PrintableString = PrintLine[0:self.DisplayColumns]
     RemainingString = PrintLine[self.DisplayColumns+1:]
-  
+
     #Pad1.PadPrint("PrintLine:{}".format(PrintLine),2,TimeStamp=True)
     #Pad1.PadPrint("Printable:{}".format(PrintableString),2,TimeStamp=True)
     #Pad1.PadPrint("Remaining:{}".format(RemainingString),2,TimeStamp=True)
 
-   
+
 
     try:
-      
+
       while (len(PrintableString) > 0):
-        
+
         #padd with spaces
         PrintableString = PrintableString.ljust(self.DisplayColumns,' ')
 
@@ -244,8 +244,8 @@ class TextWindow(object):
         #  self.TextWindow.addstr(0,0,PrintableString)
         #else:
 
-                
-        #unbold Previous line  
+
+        #unbold Previous line
         self.TextWindow.attron(curses.color_pair(self.PreviousLineColor))
         self.TextWindow.addstr(self.PreviousLineRow,self.StartColumn,self.PreviousLineText)
         self.TextWindow.attroff(curses.color_pair(self.PreviousLineColor))
@@ -265,7 +265,7 @@ class TextWindow(object):
           #A_CHARTEXT      Bit-mask to extract a character
           #COLOR_PAIR(n)   Color-pair number n
 
-          #print new line in bold        
+          #print new line in bold
           self.TextWindow.attron(curses.color_pair(Color))
           self.TextWindow.addstr(self.CurrentRow,self.StartColumn,PrintableString,curses.A_BOLD)
           self.TextWindow.attroff(curses.color_pair(Color))
@@ -286,14 +286,14 @@ class TextWindow(object):
         RemainingString = RemainingString[self.DisplayColumns:]
 
 
-        
+
       if (self.CurrentRow > (self.DisplayRows)):
         if (self.ShowBorder == 'Y'):
           self.CurrentRow = 1
         else:
           self.CurrentRow = 0
-    
-        
+
+
 
 
       #erase to end of line
@@ -305,16 +305,16 @@ class TextWindow(object):
       AdditionalInfo = "PrintLine: {}".format(PrintLine)
 
       ErrorHandler(ErrorMessage,TraceMessage,AdditionalInfo)
-      
 
-        
-  def WindowPrint(self,y,x,PrintLine,Color=2): 
+
+
+  def WindowPrint(self,y,x,PrintLine,Color=2):
     #print at a specific coordinate within the window
     #try:
-     
+
       #expand tabs to X spaces, pad the string with space then truncate
       PrintLine = PrintLine.expandtabs(4)
-      
+
       #pad the print line with spaces then truncate at the display length
       PrintLine = PrintLine.ljust(self.DisplayColumns -1)
       PrintLine = PrintLine[0:self.DisplayColumns -x]
@@ -323,37 +323,37 @@ class TextWindow(object):
       self.TextWindow.addstr(y,x,PrintLine)
       self.TextWindow.attroff(curses.color_pair(Color))
 
-      
+
       self.TextWindow.refresh()
 
     #except Exception as ErrorMessage:
     #  TraceMessage = traceback.format_exc()
     #  AdditionalInfo = "PrintLine: {}".format(PrintLine)
     #  ErrorHandler(ErrorMessage,TraceMessage,AdditionalInfo)
-        
-      
 
 
-  def DisplayTitle(self): 
-    #display the window title 
+
+
+  def DisplayTitle(self):
+    #display the window title
 
     Color = 0
     Title = ''
-       
-  
+
+
     try:
       #expand tabs to X spaces, pad the string with space then truncate
       Title = self.Title[0:self.DisplayColumns-3]
 
       self.TextWindow.attron(curses.color_pair(self.TitleColor))
       if (self.rows > 2):
-        #print new line in bold        
+        #print new line in bold
         self.TextWindow.addstr(0,2,Title)
       else:
         print ("ERROR - You cannot display title on a window smaller than 3 rows")
 
       self.TextWindow.attroff(curses.color_pair(self.TitleColor))
-      self.TextWindow.refresh()    
+      self.TextWindow.refresh()
 
 
     except Exception as ErrorMessage:
@@ -368,7 +368,7 @@ class TextWindow(object):
     self.TextWindow.border()
     self.TextWindow.attroff(curses.color_pair(self.BorderColor))
     self.DisplayTitle()
-    
+
     #self.TextWindow.refresh()
     if (self.ShowBorder  == 'Y'):
       self.CurrentRow    = 1
@@ -399,8 +399,8 @@ class TextPad(object):
     self.BorderColor       = BorderColor #pre defined text colors 1-7
     self.TextPad           = curses.newpad(self.rows,self.columns)
     self.PreviousLineColor = 2
-         
-  def PadPrint(self,PrintLine,Color=2,TimeStamp=False): 
+
+  def PadPrint(self,PrintLine,Color=2,TimeStamp=False):
     #print to the pad
     try:
       self.TextPad.idlok(1)
@@ -413,7 +413,7 @@ class TextPad(object):
       #expand tabs to X spaces, pad the string with space then truncate
       PrintLine = PrintLine.expandtabs(4)
       PrintLine = PrintLine.ljust(self.columns,' ')
-      
+
       self.TextPad.attron(curses.color_pair(Color))
       self.TextPad.addstr(PrintLine)
       self.TextPad.attroff(curses.color_pair(Color))
@@ -426,7 +426,7 @@ class TextPad(object):
       TraceMessage = traceback.format_exc()
       AdditionalInfo = "PrintLine: " + PrintLine
       ErrorHandler(ErrorMessage,TraceMessage,AdditionalInfo)
-        
+
 
   def Clear(self):
     try:
@@ -466,7 +466,7 @@ def ErrorHandler(ErrorMessage,TraceMessage,AdditionalInfo):
   print("")
   time.sleep(1)
   sys.exit('Good by for now...')
-  
+
 
 
 def FinalCleanup(stdscr):
@@ -475,14 +475,14 @@ def FinalCleanup(stdscr):
   curses.nocbreak()
   curses.curs_set(1)
   curses.endwin()
-  
+
 
 
 
 #--------------------------------------
 # Initialize Text window / pads      --
 #--------------------------------------
-  
+
 def CreateTextWindows():
 
   global StatusWindow
@@ -499,8 +499,8 @@ def CreateTextWindows():
   global InputMessageBox
 
 
-  #Colors are numbered, and start_color() initializes 8 
-  #basic colors when it activates color mode. 
+  #Colors are numbered, and start_color() initializes 8
+  #basic colors when it activates color mode.
   #They are: 0:black, 1:red, 2:green, 3:yellow, 4:blue, 5:magenta, 6:cyan, and 7:white.
   #The curses module defines named constants for each of these colors: curses.COLOR_BLACK, curses.COLOR_RED, and so forth.
   #Future Note for pads:  call noutrefresh() on a number of windows to update the data structure, and then call doupdate() to update the screen.
@@ -511,13 +511,13 @@ def CreateTextWindows():
   curses.start_color()
   curses.noecho()
 
-  
+
   #We do a quick check to prevent the screen boxes from being erased.  Weird, I know.  Could not find
   #a solution.  Am happy with this work around.
   c = str(stdscr.getch())
 
 
-  #NOTE: When making changes, be very careful.  Each Window's position is relative to the other ones on the same 
+  #NOTE: When making changes, be very careful.  Each Window's position is relative to the other ones on the same
   #horizontal level.  Change one setting at a time and see how it looks on your screen
 
   #Window1 Coordinates (info window)
@@ -527,7 +527,7 @@ def CreateTextWindows():
   Window1y1 = 1
   Window1x2 = Window1x1 + Window1Length
   Window1y2 = Window1y1 + Window1Height
-  
+
 
   #Window2 Coordinates (small debug window)
   Window2Height = 12
@@ -554,12 +554,12 @@ def CreateTextWindows():
   #Window4Length = Window1Length + Window2Length + Window3Length + 2
   Window4Length = 60
   Window4x1 = 0
-  Window4y1 = Window1y2 
+  Window4y1 = Window1y2
   Window4x2 = Window4x1 + Window4Length
   Window4y2 = Window4y1 + Window4Height
 
 
-  #We are going to put a window here as a border, but have the pad 
+  #We are going to put a window here as a border, but have the pad
   #displayed inside
   #Window5 Coordinates (to the right of window4)
   Window5Height = 45
@@ -568,7 +568,7 @@ def CreateTextWindows():
   Window5y1 = Window4y1
   Window5x2 = Window5x1 + Window5Length
   Window5y2 = Window5y1 + Window5Height
-  
+
   # Coordinates (scrolling pad/window for showing keys being decoded)
   Pad1Columns = Window5Length -2
   Pad1Lines   = Window5Height -2
@@ -590,20 +590,20 @@ def CreateTextWindows():
   #and title and will surround the input window
   SendMessageWindowHeight = 6
   SendMessageWindowLength = 35
-  SendMessageWindowx1 = Window5x2 + 1 
-  SendMessageWindowy1 = HelpWindowy1 + HelpWindowHeight 
+  SendMessageWindowx1 = Window5x2 + 1
+  SendMessageWindowy1 = HelpWindowy1 + HelpWindowHeight
   SendMessageWindowx2 = SendMessageWindowx1 + SendMessageWindowLength
   SendMessageWindowy2 = SendMessageWindowy1 + SendMessageWindowHeight
-  
+
   #InputMessage Window
   #This window will be used get the text to be sent
   InputMessageWindowHeight = SendMessageWindowHeight -2
   InputMessageWindowLength = SendMessageWindowLength -2
-  InputMessageWindowx1 = Window5x2 + 2 
+  InputMessageWindowx1 = Window5x2 + 2
   InputMessageWindowy1 = HelpWindowy1 + HelpWindowHeight +1
   InputMessageWindowx2 = InputMessageWindowx1 + InputMessageWindowLength -2
   InputMessageWindowy2 = InputMessageWindowy1 + InputMessageWindowHeight -2
-  
+
 
 
   try:
@@ -625,9 +625,9 @@ def CreateTextWindows():
 
     # Create windows
                               # name,  rows,      columns,   y1,    x1,    y2,    x2,ShowBorder,BorderColor,TitleColor):
-    TitleWindow   = TextWindow('TitleWindow',1,50,0,0,0,50,'N',0,0) 
-    StatusWindow  = TextWindow('StatusWindow',1,50,0,51,0,100,'N',0,0) 
-    StatusWindow2 = TextWindow('StatusWindow2',1,30,0,101,0,130,'N',0,0) 
+    TitleWindow   = TextWindow('TitleWindow',1,50,0,0,0,50,'N',0,0)
+    StatusWindow  = TextWindow('StatusWindow',1,50,0,51,0,100,'N',0,0)
+    StatusWindow2 = TextWindow('StatusWindow2',1,30,0,101,0,130,'N',0,0)
     Window1       = TextWindow('Window1',Window1Height,Window1Length,Window1y1,Window1x1,Window1y2,Window1x2,'Y',2,2)
     Window2       = TextWindow('Window2',Window2Height,Window2Length,Window2y1,Window2x1,Window2y2,Window2x2,'Y',2,2)
     Window3       = TextWindow('Window3',Window3Height,Window3Length,Window3y1,Window3x1,Window3y2,Window3x2,'Y',3,3)
@@ -639,15 +639,15 @@ def CreateTextWindows():
     Pad1               = TextPad('Pad1', Pad1Lines,Pad1Columns,Pad1y1,Pad1x1,Pad1y2,Pad1x2,'N',5)
 
 
-    
 
-    # Display the title  
+
+    # Display the title
         #StatusWindow.ScrollPrint("Preparing devices",6)
     #Window1.ScrollPrint("Channel Info",2)
     #Window2.ScrollPrint("Debug Info",2)
     #Window3.ScrollPrint("Alerts",2)
     #Window4.ScrollPrint("Details",2)
-    
+
     #each title needs to be initialized or you get errors in scrollprint
     TitleWindow.Title,   TitleWindow.TitleColor   = "--MeshWatch 1.0--",2
     StatusWindow.Title,  StatusWindow.TitleColor  = "",2
@@ -658,9 +658,9 @@ def CreateTextWindows():
     Window4.Title, Window4.TitleColor = "Data Packets",5
     Window5.Title, Window5.TitleColor = "Extended Information",6
     HelpWindow.Title, HelpWindow.TitleColor = "Help",7
-    SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press S to send a message",7
-    
-    
+    SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press U or S to send a message",7
+
+
 
 
     TitleWindow.WindowPrint(0,0,TitleWindow.Title)
@@ -671,12 +671,12 @@ def CreateTextWindows():
     Window5.DisplayTitle()
     HelpWindow.DisplayTitle()
     SendMessageWindow.DisplayTitle()
-    
-    DisplayHelpInfo() 
-    
+
+    DisplayHelpInfo()
+
     #Prepare edit window for send message
     InputMessageBox = Textbox(InputMessageWindow.TextWindow)
-    
+
 
     #NORTE: we don't need this anymore, as the SendMessageWindow has replaced it
     #draw a box around the editwindow
@@ -687,7 +687,7 @@ def CreateTextWindows():
 
 
 
-    
+
 
 
   except Exception as ErrorMessage:
@@ -736,8 +736,8 @@ def DecodePacket(PacketParent,Packet,Filler,FillerChar,PrintSleep=0):
   global PacketsSent
   global LastPacketType
   global HardwareModel
-  global DeviceID 
-  
+  global DeviceID
+
 
 
   #This is a recursive funtion that will decode a packet (get key/value pairs from a dictionary )
@@ -748,7 +748,7 @@ def DecodePacket(PacketParent,Packet,Filler,FillerChar,PrintSleep=0):
   #used to indent packets
   if (PacketParent.upper() != 'MAINPACKET'):
     Filler = Filler + FillerChar
- 
+
   Window4.ScrollPrint("{}".format(PacketParent).upper(),2)
   UpdateStatusWindow(NewLastPacketType=PacketParent)
 
@@ -758,18 +758,18 @@ def DecodePacket(PacketParent,Packet,Filler,FillerChar,PrintSleep=0):
 
   if PriorityOutput == True:
     time.sleep(5)
-  
+
 
   #if the packet is a dictionary, decode it
   if isinstance(Packet, collections.abc.Mapping):
 
-    
+
     for Key in Packet.keys():
-      Value = Packet.get(Key) 
+      Value = Packet.get(Key)
 
       if (PrintSleep > 0):
         time.sleep(PrintSleep)
-  
+
 
       #Pad1.PadPrint("{} - {}".format(PacketParent,Key),2)
 
@@ -781,7 +781,7 @@ def DecodePacket(PacketParent,Packet,Filler,FillerChar,PrintSleep=0):
         #Window4.ScrollPrint("{}".format(Key).upper(),2)
         LastPacketType = Key.upper()
 
-        DecodePacket("{}/{}".format(PacketParent,Key).upper(),Value,Filler,FillerChar,PrintSleep=PrintSleep)  
+        DecodePacket("{}/{}".format(PacketParent,Key).upper(),Value,Filler,FillerChar,PrintSleep=PrintSleep)
 
 
 
@@ -793,28 +793,28 @@ def DecodePacket(PacketParent,Packet,Filler,FillerChar,PrintSleep=0):
           Window4.ScrollPrint("  {}{}: {}".format(Filler,Key,Value),2)
 
 
-        
+
   else:
     Window2.ScrollPrint("Warning: Not a packet!",5,TimeStamp=True)
-  
+
   #Window4.ScrollPrint("{}END PACKET: {} ".format(Filler,PacketParent.upper()),2)
-  
 
 
 
 
 
-  
+
+
 
 def onReceive(packet, interface): # called when a packet arrives
     global PacketsReceived
     global PacketsSent
-    
+
     PacketsReceived = PacketsReceived + 1
-    
+
 
     Window2.ScrollPrint("onReceive",2,TimeStamp=True)
-    Window4.ScrollPrint(" ",2)    
+    Window4.ScrollPrint(" ",2)
     Window4.ScrollPrint("==Packet RECEIVED======================================",2)
 
     Decoded  = packet.get('decoded')
@@ -828,15 +828,15 @@ def onReceive(packet, interface): # called when a packet arrives
     if(Message):
       Window3.ScrollPrint("From: {} - {}".format(From,Message),2,TimeStamp=True)
     Window4.ScrollPrint("=======================================================",2)
-    Window4.ScrollPrint(" ",2)    
+    Window4.ScrollPrint(" ",2)
 
     #example of scrolling the window
     #Window4.TextWindow.idlok(1)
     #Window4.TextWindow.scrollok(1)
     #Window4.TextWindow.scroll(10)
     #Window4.TextWindow.scrollok(0)
-    
-    
+
+
 
 
 
@@ -849,22 +849,22 @@ def onConnectionEstablished(interface, topic=pub.AUTO_TOPIC): # called when we (
     #Window2.ScrollPrint('onConnectionEstablished',2,TimeStamp=True)
     #Window1.WindowPrint(1,1,"Status: CONNECTED",2)
     UpdateStatusWindow(NewDeviceStatus = "CONNECTED",Color=2)
-    
+
     From = "BaseStation"
     To   = "All"
     current_time = datetime.now().strftime("%H:%M:%S")
     Message = "MeshWatch active,  please respond. [{}]".format(current_time)
     Window3.ScrollPrint("From: {} - {}".format(From,Message,To),2,TimeStamp=True)
-    
+
     try:
       interface.sendText(Message, wantAck=True)
-      Window4.ScrollPrint("",2)    
+      Window4.ScrollPrint("",2)
       Window4.ScrollPrint("==Packet SENT==========================================",3)
       Window4.ScrollPrint("To:     {}:".format(To),3)
       Window4.ScrollPrint("From    {}:".format(From),3)
       Window4.ScrollPrint("Message {}:".format(Message),3)
       Window4.ScrollPrint("=======================================================",3)
-      Window4.ScrollPrint("",2)    
+      Window4.ScrollPrint("",2)
 
     except Exception as ErrorMessage:
       TraceMessage = traceback.format_exc()
@@ -885,14 +885,14 @@ def onNodeUpdated(interface, topic=pub.AUTO_TOPIC): # called when we (re)connect
   if(PriorityOutput == False):
     Window2.ScrollPrint('onNodeUpdated',2,TimeStamp=True)
     Window1.WindowPrint(1,4,'UPDATE RECEIVED',1,TimeStamp=True)
-    Window4.ScrollPrint("",2)    
+    Window4.ScrollPrint("",2)
 
 
 
 def SIGINT_handler(signal_received, frame):
   # Handle any cleanup here
   print('WARNING: Somethign bad happened.  SIGINT detected.')
-  FinalCleanup(stdscr)  
+  FinalCleanup(stdscr)
   print('** END OF LINE')
   sys.exit('Good by for now...')
 
@@ -908,7 +908,7 @@ def PollKeyboard():
   c = ""
   #curses.filter()
   curses.noecho()
- 
+
   try:
     c = chr(stdscr.getch())
   except Exception as ErrorMessage:
@@ -919,7 +919,7 @@ def PollKeyboard():
   if (c >= '0' and c <= '9'):
     #print ("Digit detected")
     #StatusWindow.ScrollPrint("Digit Detected",2)
-    ReturnChar = (c)    
+    ReturnChar = (c)
 
   if (c != ""):
     #print ("----------------")
@@ -940,8 +940,8 @@ def ProcessKeypress(Key):
   global interface
   global PauseOutput
   global PriorityOutput
-  global PrintSleep 
-  global OldPrintSleep 
+  global PrintSleep
+  global OldPrintSleep
   count  = 0
 
   OutputLine = "KEYPRESS: [" + str(Key) + "]"
@@ -954,10 +954,10 @@ def ProcessKeypress(Key):
   # q = quit
   # r = reboot
   # s = Send message
+  # m = Send secure message
   # T = test messages
-  
 
-    
+
   if (Key == "p" or Key == " "):
     PauseOutput = not (PauseOutput)
     if (PauseOutput == True):
@@ -997,19 +997,22 @@ def ProcessKeypress(Key):
 
   elif (Key == "r"):
     Window2.ScrollPrint('** REBOOTING **',1)
-    
+
     FinalCleanup(stdscr)
     os.execl(sys.executable, sys.executable, *sys.argv)
 
+  elif (Key == "u"):
+    SendUnsignedMessagePacket(interface)
+
   elif (Key == "s"):
-    SendMessagePacket(interface)
+    SendSignedMessagePacket(interface)
 
   elif (Key == "t"):
     TestMesh(interface,5,10)
 
 
 
-def SendMessagePacket(interface, Message=''):
+def SendUnsignedMessagePacket(interface, Message=''):
     Window2.ScrollPrint("SendMessagePacket",2)
     TheMessage=''
 
@@ -1025,12 +1028,12 @@ def SendMessagePacket(interface, Message=''):
     SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
 
     SendMessageWindow.TextWindow.refresh()
-    
+
     #Show cursor
-    
+
     curses.curs_set(True)
     # Let the user edit until Ctrl-G is struck.
-    
+
     InputMessageWindow.TextWindow.erase()
     InputMessageBox.edit()
     curses.curs_set(False)
@@ -1039,29 +1042,83 @@ def SendMessagePacket(interface, Message=''):
     # Get resulting contents
 
     TheMessage = InputMessageBox.gather().replace("\n", " ")
-    
+
     #remove last character which seems to be interfering with line printing
     TheMessage = TheMessage[0:-1]
-  
+
     #Send the message to the device
     interface.sendText(TheMessage, wantAck=True)
 
-    
-    Window4.ScrollPrint(" ",2)    
+
+    Window4.ScrollPrint(" ",2)
     Window4.ScrollPrint("==Packet SENT==========================================",3)
     Window4.ScrollPrint("To:      All:",3)
     Window4.ScrollPrint("From:    BaseStation",3)
     Window4.ScrollPrint("Message: {}".format(TheMessage),3)
     Window4.ScrollPrint("=======================================================",3)
-    Window4.ScrollPrint(" ",2)    
+    Window4.ScrollPrint(" ",2)
 
     SendMessageWindow.Clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press S to send a message'
+    SendMessageWindow.Title = 'Press U or S to send a message'
     SendMessageWindow.DisplayTitle()
 
-    
+
     Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
+
+def SendSignedMessagePacket(interface, Message=''):
+  Window2.ScrollPrint("SendMessagePacket",2)
+  TheMessage=''
+
+
+  InputMessageWindow.TextWindow.move(0,0)
+  #Change color temporarily
+  SendMessageWindow.TextWindow.attron(curses.color_pair(2))
+  SendMessageWindow.TextWindow.border()
+  SendMessageWindow.TitleColor = 2
+  SendMessageWindow.Title = 'Press CTL-G to send'
+  SendMessageWindow.DisplayTitle()
+
+  SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
+
+  SendMessageWindow.TextWindow.refresh()
+
+  #Show cursor
+
+  curses.curs_set(True)
+  # Let the user edit until Ctrl-G is struck.
+
+  InputMessageWindow.TextWindow.erase()
+  InputMessageBox.edit()
+  curses.curs_set(False)
+
+
+  # Get resulting contents
+
+  TheMessage = InputMessageBox.gather().replace("\n", " ")
+
+  #remove last character which seems to be interfering with line printing
+  TheMessage = TheMessage[0:-1]
+
+  #Send the message to the device
+  interface.sendText(TheMessage, wantAck=True)
+
+
+  Window4.ScrollPrint(" ",2)
+  Window4.ScrollPrint("==Packet SENT==========================================",3)
+  Window4.ScrollPrint("To:      All:",3)
+  Window4.ScrollPrint("From:    BaseStation",3)
+  Window4.ScrollPrint("Message: {}".format(TheMessage),3)
+  Window4.ScrollPrint("=======================================================",3)
+  Window4.ScrollPrint(" ",2)
+
+  SendMessageWindow.Clear()
+  SendMessageWindow.TitleColor = 2
+  SendMessageWindow.Title = 'Press U or S to send a message'
+  SendMessageWindow.DisplayTitle()
+
+
+  Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
 
 
 def GoToSleep(TimeToSleep):
@@ -1204,11 +1261,12 @@ def DisplayHelpInfo():
   HelpWindow.ScrollPrint("N - Show all NODES",7)
   HelpWindow.ScrollPrint("Q - QUIT program",7)
   HelpWindow.ScrollPrint("R - RESTART MeshWatch",7)
-  HelpWindow.ScrollPrint("S - SEND message",7)
+  HelpWindow.ScrollPrint("U - SEND unsigned message",7)
+  HelpWindow.ScrollPrint("S - SEND signed message",7)
   HelpWindow.ScrollPrint("T - TEST mesh network",7)
   HelpWindow.ScrollPrint("SPACEBAR - Slow/Fast output",7)
-  
-  
+
+
 
 
 def GetMyNodeInfo(interface):
@@ -1236,7 +1294,7 @@ def GetMyNodeInfo(interface):
 
     if 'hwModel' in TheNode['user']:
       UpdateStatusWindow(NewHardwareModel=TheNode['user']['hwModel'],Color=2)
-    
+
 
     if 'macaddr' in TheNode['user']:
       UpdateStatusWindow(NewMacAddress=TheNode['user']['macaddr'],Color=2)
@@ -1255,7 +1313,7 @@ def deg2num(lat_deg, lon_deg, zoom):
   xtile = int((lon_deg + 180.0) / 360.0 * n)
   ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
   return (xtile, ytile)
-      
+
 
 def DisplayNodes(interface):
 
@@ -1268,7 +1326,7 @@ def DisplayNodes(interface):
     #time.sleep(1)
     Pad1.Clear()
     Pad1.PadPrint("--NODES IN MESH------------",3)
-   
+
     if (PriorityOutput == True):
       time.sleep(5)
 
@@ -1276,11 +1334,11 @@ def DisplayNodes(interface):
 
     # interface.nodes.values() will return a dictionary
       for node in (interface.nodes.values()):
-        Pad1.PadPrint("NAME: {}".format(node['user']['longName']),3)  
-        Pad1.PadPrint("NODE: {}".format(node['num']),3)  
-        Pad1.PadPrint("ID:   {}".format(node['user']['id']),3)  
-        Pad1.PadPrint("MAC:  {}".format(node['user']['macaddr']),3)  
-        
+        Pad1.PadPrint("NAME: {}".format(node['user']['longName']),3)
+        Pad1.PadPrint("NODE: {}".format(node['num']),3)
+        Pad1.PadPrint("ID:   {}".format(node['user']['id']),3)
+        Pad1.PadPrint("MAC:  {}".format(node['user']['macaddr']),3)
+
 
         if 'position' in node.keys():
 
@@ -1290,23 +1348,23 @@ def DisplayNodes(interface):
             Lon = node['position']['longitude']
 
             xtile,ytile = deg2num(Lat,Lon,10)
-            Pad1.PadPrint("Tile: {}/{}".format(xtile,ytile),3) 
-            Pad1.PadPrint("LAT:  {}".format(node['position']['latitude']),3)  
-            Pad1.PadPrint("LONG: {}".format(node['position']['longitude']),3)  
+            Pad1.PadPrint("Tile: {}/{}".format(xtile,ytile),3)
+            Pad1.PadPrint("LAT:  {}".format(node['position']['latitude']),3)
+            Pad1.PadPrint("LONG: {}".format(node['position']['longitude']),3)
             Distance = geopy.distance.geodesic((Lat,Lon), (BaseLat, BaseLon)).m
-            Pad1.PadPrint("Distance: {:.3f} m".format(Distance),3)  
+            Pad1.PadPrint("Distance: {:.3f} m".format(Distance),3)
 
-          
-          
+
+
 
           if 'batteryLevel' in node['position']:
             Battery = node['position']['batteryLevel']
-            Pad1.PadPrint("Battery:   {}".format(Battery),3)  
+            Pad1.PadPrint("Battery:   {}".format(Battery),3)
 
-        
+
         if 'lastHeard' in node.keys():
           LastHeardDatetime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(node['lastHeard']))
-          Pad1.PadPrint("LastHeard: {}".format(LastHeardDatetime),3)  
+          Pad1.PadPrint("LastHeard: {}".format(LastHeardDatetime),3)
 
         time.sleep(PrintSleep)
         Pad1.PadPrint("",3)
@@ -1318,7 +1376,7 @@ def DisplayNodes(interface):
       ErrorHandler(ErrorMessage,TraceMessage,AdditionalInfo)
 
     Pad1.PadPrint("---------------------------",3)
-      
+
 
 def exec_process(cmdline, silent, input=None, **kwargs):
     """Execute a subprocess and returns the returncode, stdout buffer and stderr buffer.
@@ -1361,7 +1419,7 @@ def tail(f, n):
 def DisplayLogs(ScrollSleep):
   global PriorityOutput
 
-  #we want to stop all other output to prevent text being written to other windows 
+  #we want to stop all other output to prevent text being written to other windows
   PriorityOutput = True
   Window2.ScrollPrint("PriorityOutput: activated")
 
@@ -1379,37 +1437,37 @@ def DisplayLogs(ScrollSleep):
 
   PriorityOutput = False
   Window2.ScrollPrint("PriorityOutput: deactivated")
-      
- 
+
+
 def TestMesh(interface, MessageCount=10,Sleep=10):
     Window2.ScrollPrint("TestMesh",2)
-    
-    
+
+
     for i in range (1,MessageCount+1):
-    
+
       TheMessage=''
       current_time = datetime.now().strftime("%H:%M:%S")
       TheMessage = "This is Base station.  Message: {} Date: {}".format(i,current_time)
 
-              
-      
+
+
       #Send the message to the device
       interface.sendText(TheMessage, wantAck=True)
 
-      
-      Window4.ScrollPrint(" ",2)    
+
+      Window4.ScrollPrint(" ",2)
       Window4.ScrollPrint("==Packet SENT==========================================",3)
       Window4.ScrollPrint("To:      All:",3)
       Window4.ScrollPrint("From:    BaseStation",3)
       Window4.ScrollPrint("Message: {}".format(TheMessage),3)
       Window4.ScrollPrint("=======================================================",3)
-      Window4.ScrollPrint(" ",2)    
+      Window4.ScrollPrint(" ",2)
 
       SendMessageWindow.Clear()
       SendMessageWindow.TitleColor = 2
-      SendMessageWindow.Title = 'Press S to send a message'
+      SendMessageWindow.Title = 'Press U or S to send a message'
       SendMessageWindow.DisplayTitle()
-      
+
       Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
 
       GoToSleep(Sleep)
@@ -1482,12 +1540,12 @@ def main(stdscr):
       AdditionalInfo = "57 lines and 190 columns required. Found {} lines and {} columns.".format(curses.LINES, curses.COLS)
       ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
 
-    
+
     CreateTextWindows()
     Window4.ScrollPrint("System initiated",2)
     Window2.ScrollPrint("Priorityoutput: {}".format(PriorityOutput),1)
-    
-    
+
+
     #Instanciate a meshtastic object
     #By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
     if (args.host):
@@ -1506,7 +1564,7 @@ def main(stdscr):
     Window4.ScrollPrint("Subscribe to publications",2)
     pub.subscribe(onConnectionEstablished, "meshtastic.connection.established")
     pub.subscribe(onConnectionLost,        "meshtastic.connection.lost")
-    
+
     #does not seem to work
     #pub.subscribe(onNodeUpdated,           "meshtastic.node.updated")
     time.sleep(2)
@@ -1520,7 +1578,7 @@ def main(stdscr):
     if(SendMessage):
        interface.sendText(TheMessage, wantAck=True)
 
-   
+
 
     #Go into listening mode
     Window4.ScrollPrint("Listening for: {} seconds".format(TimeToSleep),2)
@@ -1532,10 +1590,10 @@ def main(stdscr):
       GoToSleep(5)
 
 
-    interface.close()  
+    interface.close()
     Window4.ScrollPrint("--End of Line------------",2)
     Window4.ScrollPrint("",2)
-    
+
 
 
 
@@ -1547,7 +1605,7 @@ def main(stdscr):
 
 
 
-  
+
 
 #--------------------------------------
 # Main (pre-amble                    --
