@@ -1001,10 +1001,10 @@ def ProcessKeypress(Key):
     FinalCleanup(stdscr)
     os.execl(sys.executable, sys.executable, *sys.argv)
 
-  elif (Key == "s"):
-    SendMessagePacket(interface)
+  elif (Key == "u"):
+    SendUnsignedMessagePacket(interface)
 
-  elif (Key == "k"):
+  elif (Key == "s"):
     SendSignedMessagePacket(interface)
 
   elif (Key == "t"):
@@ -1261,8 +1261,8 @@ def DisplayHelpInfo():
   HelpWindow.ScrollPrint("N - Show all NODES",7)
   HelpWindow.ScrollPrint("Q - QUIT program",7)
   HelpWindow.ScrollPrint("R - RESTART MeshWatch",7)
-  HelpWindow.ScrollPrint("S - SEND unsigned message",7)
-  HelpWindow.ScrollPrint("K - SEND signed message",7)
+  HelpWindow.ScrollPrint("U - SEND unsigned message",7)
+  HelpWindow.ScrollPrint("S - SEND signed message",7)
   HelpWindow.ScrollPrint("T - TEST mesh network",7)
   HelpWindow.ScrollPrint("SPACEBAR - Slow/Fast output",7)
 
