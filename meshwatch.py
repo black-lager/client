@@ -1004,15 +1004,15 @@ def ProcessKeypress(Key):
   elif (Key == "s"):
     SendMessagePacket(interface)
 
-  elif (Key == "m"):
-    SendSecureMessagePacket(interface)
+  elif (Key == "k"):
+    SendSignedMessagePacket(interface)
 
   elif (Key == "t"):
     TestMesh(interface,5,10)
 
 
 
-def SendMessagePacket(interface, Message=''):
+def SendUnsignedMessagePacket(interface, Message=''):
     Window2.ScrollPrint("SendMessagePacket",2)
     TheMessage=''
 
@@ -1066,59 +1066,59 @@ def SendMessagePacket(interface, Message=''):
 
     Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
 
-  def SendSecureMessagePacket(interface, Message=''):
-    Window2.ScrollPrint("SendMessagePacket",2)
-    TheMessage=''
+def SendSignedMessagePacket(interface, Message=''):
+  Window2.ScrollPrint("SendMessagePacket",2)
+  TheMessage=''
 
 
-    InputMessageWindow.TextWindow.move(0,0)
-    #Change color temporarily
-    SendMessageWindow.TextWindow.attron(curses.color_pair(2))
-    SendMessageWindow.TextWindow.border()
-    SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press CTL-G to send'
-    SendMessageWindow.DisplayTitle()
+  InputMessageWindow.TextWindow.move(0,0)
+  #Change color temporarily
+  SendMessageWindow.TextWindow.attron(curses.color_pair(2))
+  SendMessageWindow.TextWindow.border()
+  SendMessageWindow.TitleColor = 2
+  SendMessageWindow.Title = 'Press CTL-G to send'
+  SendMessageWindow.DisplayTitle()
 
-    SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
+  SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
 
-    SendMessageWindow.TextWindow.refresh()
+  SendMessageWindow.TextWindow.refresh()
 
-    #Show cursor
+  #Show cursor
 
-    curses.curs_set(True)
-    # Let the user edit until Ctrl-G is struck.
+  curses.curs_set(True)
+  # Let the user edit until Ctrl-G is struck.
 
-    InputMessageWindow.TextWindow.erase()
-    InputMessageBox.edit()
-    curses.curs_set(False)
-
-
-    # Get resulting contents
-
-    TheMessage = InputMessageBox.gather().replace("\n", " ")
-
-    #remove last character which seems to be interfering with line printing
-    TheMessage = TheMessage[0:-1]
-
-    #Send the message to the device
-    interface.sendText(TheMessage, wantAck=True)
+  InputMessageWindow.TextWindow.erase()
+  InputMessageBox.edit()
+  curses.curs_set(False)
 
 
-    Window4.ScrollPrint(" ",2)
-    Window4.ScrollPrint("==Packet SENT==========================================",3)
-    Window4.ScrollPrint("To:      All:",3)
-    Window4.ScrollPrint("From:    BaseStation",3)
-    Window4.ScrollPrint("Message: {}".format(TheMessage),3)
-    Window4.ScrollPrint("=======================================================",3)
-    Window4.ScrollPrint(" ",2)
+  # Get resulting contents
 
-    SendMessageWindow.Clear()
-    SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press S to send a message'
-    SendMessageWindow.DisplayTitle()
+  TheMessage = InputMessageBox.gather().replace("\n", " ")
+
+  #remove last character which seems to be interfering with line printing
+  TheMessage = TheMessage[0:-1]
+
+  #Send the message to the device
+  interface.sendText(TheMessage, wantAck=True)
 
 
-    Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
+  Window4.ScrollPrint(" ",2)
+  Window4.ScrollPrint("==Packet SENT==========================================",3)
+  Window4.ScrollPrint("To:      All:",3)
+  Window4.ScrollPrint("From:    BaseStation",3)
+  Window4.ScrollPrint("Message: {}".format(TheMessage),3)
+  Window4.ScrollPrint("=======================================================",3)
+  Window4.ScrollPrint(" ",2)
+
+  SendMessageWindow.Clear()
+  SendMessageWindow.TitleColor = 2
+  SendMessageWindow.Title = 'Press S to send a message'
+  SendMessageWindow.DisplayTitle()
+
+
+  Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
 
 
 def GoToSleep(TimeToSleep):
@@ -1261,7 +1261,8 @@ def DisplayHelpInfo():
   HelpWindow.ScrollPrint("N - Show all NODES",7)
   HelpWindow.ScrollPrint("Q - QUIT program",7)
   HelpWindow.ScrollPrint("R - RESTART MeshWatch",7)
-  HelpWindow.ScrollPrint("S - SEND message",7)
+  HelpWindow.ScrollPrint("S - SEND unsigned message",7)
+  HelpWindow.ScrollPrint("K - SEND signed message",7)
   HelpWindow.ScrollPrint("T - TEST mesh network",7)
   HelpWindow.ScrollPrint("SPACEBAR - Slow/Fast output",7)
 
