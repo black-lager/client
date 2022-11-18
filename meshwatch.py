@@ -1465,7 +1465,7 @@ def TestMesh(interface, MessageCount=10,Sleep=10):
 
       SendMessageWindow.Clear()
       SendMessageWindow.TitleColor = 2
-      SendMessageWindow.Title = 'Press S to send a message'
+      SendMessageWindow.Title = 'Press U or S to send a message'
       SendMessageWindow.DisplayTitle()
 
       Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
