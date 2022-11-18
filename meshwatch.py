@@ -658,7 +658,7 @@ def CreateTextWindows():
     Window4.Title, Window4.TitleColor = "Data Packets",5
     Window5.Title, Window5.TitleColor = "Extended Information",6
     HelpWindow.Title, HelpWindow.TitleColor = "Help",7
-    SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press S to send a message",7
+    SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press U or S to send a message",7
 
 
 
@@ -1060,7 +1060,7 @@ def SendUnsignedMessagePacket(interface, Message=''):
 
     SendMessageWindow.Clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press S to send a message'
+    SendMessageWindow.Title = 'Press U or S to send a message'
     SendMessageWindow.DisplayTitle()
 
 
@@ -1114,7 +1114,7 @@ def SendSignedMessagePacket(interface, Message=''):
 
   SendMessageWindow.Clear()
   SendMessageWindow.TitleColor = 2
-  SendMessageWindow.Title = 'Press S to send a message'
+  SendMessageWindow.Title = 'Press U or S to send a message'
   SendMessageWindow.DisplayTitle()
 
 
