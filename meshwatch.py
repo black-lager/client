@@ -425,7 +425,7 @@ def ErrorHandler(ErrorMessage,TraceMessage,AdditionalInfo):
   print("")
   print("")
   time.sleep(1)
-  sys.exit('Good by for now...')
+  sys.exit('Meshwatch exiting...')
 
 
 
@@ -854,7 +854,7 @@ def SIGINT_handler(signal_received, frame):
   print('WARNING: Somethign bad happened.  SIGINT detected.')
   FinalCleanup(stdscr)
   print('** END OF LINE')
-  sys.exit('Good by for now...')
+  sys.exit('Meshwatch exiting...')
 
 
 
