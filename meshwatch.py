@@ -1011,7 +1011,7 @@ def SendUnsignedMessagePacket(interface, Message=''):
 
 
     Window4.ScrollPrint(" ",2)
-    Window4.ScrollPrint("==Packet SENT==========================================",3)
+    Window4.ScrollPrint("==Unsigned Packet SENT=================================",3)
     Window4.ScrollPrint("To:      All:",3)
     Window4.ScrollPrint("From:    BaseStation",3)
     Window4.ScrollPrint("Message: {}".format(TheMessage),3)
@@ -1065,7 +1065,7 @@ def SendSignedMessagePacket(interface, Message=''):
 
 
   Window4.ScrollPrint(" ",2)
-  Window4.ScrollPrint("==Packet SENT==========================================",3)
+  Window4.ScrollPrint("==Signed Packet SENT===================================",3)
   Window4.ScrollPrint("To:      All:",3)
   Window4.ScrollPrint("From:    BaseStation",3)
   Window4.ScrollPrint("Message: {}".format(TheMessage),3)
