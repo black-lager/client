@@ -953,8 +953,8 @@ def ProcessKeypress(Key):
   # p = pause
   # q = quit
   # r = reboot
-  # s = Send message
-  # m = Send secure message
+  # u = Send unsigned message
+  # s = Send signed message
   # T = test messages
 
 
@@ -1640,6 +1640,3 @@ if __name__=='__main__':
       TraceMessage = traceback.format_exc()
       AdditionalInfo = "Main pre-amble"
       ErrorHandler(ErrorMessage,TraceMessage,AdditionalInfo)
-
-
-# %%
