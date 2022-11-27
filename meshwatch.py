@@ -1,49 +1,9 @@
 #!/usr/bin/env python3
 
 #------------------------------------------------------------------------------
-#  __  __           _  __        __    _       _                             --
-# |  \/  | ___  ___| |_\ \      / /_ _| |_ ___| |__                          --
-# | |\/| |/ _ \/ __| '_ \ \ /\ / / _` | __/ __| '_ \                         --
-# | |  | |  __/\__ \ | | \ V  V / (_| | || (__| | | |                        --
-# |_|  |_|\___||___/_| |_|\_/\_/ \__,_|\__\___|_| |_|                        --
-#                                                                            --
-#------------------------------------------------------------------------------
-# Author: William McEvoy                                                     --
-# Created: Sept 8 2021                                                       --
-#                                                                            --
-# Purpose:  Send and receive messages from a Mesthtastic device.             --
-#                                                                            --
-#                                                                            --
-#------------------------------------------------------------------------------
-#  Sept 8, 2021                                                              --
-#   - adding formatting and comments                                         --
-#------------------------------------------------------------------------------
-#  Sept 10, 2021                                                             --
-#   - added Curses based text interface                                      --
-#   - class and function was created for GPSProbe                            --
-#------------------------------------------------------------------------------
-#  Sept 10, 2021                                                             --
-#   - added recursive function to decode packets of packets                  --
-#------------------------------------------------------------------------------
-#  Sept 26, 2021                                                             --
-#   - renamed project to MeshWatch                                           --
-#------------------------------------------------------------------------------
-#  Oct 01, 2021                                                              --
-#   - Added option to send X messages every Y seconds to all nodes for       --
-#     tesing the mesh network                                                --
-#   - node information now includes distance in meteres from basestation     --
-#------------------------------------------------------------------------------
-#                                                                            --
-# Credit to other projects:                                                  --
-#                                                                            --
-#  Intercepting SIGINT and CTL-C in Curses                                   --
-#  - https://gnosis.cx/publish/programming/charming_python_6.html            --
-#                                                                            --
-#  Meshtastic-python                                                         --
-#  - https://github.com/meshtastic/Meshtastic-python                         --
+# Send and receive signed or unsigned messages from a Mesthtastic device.
 #------------------------------------------------------------------------------
 
-#Final Version
 import meshtastic
 import meshtastic.serial_interface
 import meshtastic.tcp_interface
