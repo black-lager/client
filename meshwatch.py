@@ -973,7 +973,7 @@ def ProcessKeypress(Key):
 
 
 def SendUnsignedMessagePacket(interface, Message=''):
-    Window2.ScrollPrint("SendMessagePacket",2)
+    Window2.ScrollPrint("SendUnsignedMessagePacket",2)
     TheMessage=''
 
 
@@ -1027,7 +1027,7 @@ def SendUnsignedMessagePacket(interface, Message=''):
     Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
 
 def SendSignedMessagePacket(interface, Message=''):
-  Window2.ScrollPrint("SendMessagePacket",2)
+  Window2.ScrollPrint("SendSignedMessagePacket",2)
   TheMessage=''
 
 
@@ -1061,7 +1061,7 @@ def SendSignedMessagePacket(interface, Message=''):
   TheMessage = TheMessage[0:-1]
 
   #Send the message to the device
-  interface.sendText(TheMessage, wantAck=True)
+  interface.sendSignedText(TheMessage, wantAck=True)
 
 
   Window4.ScrollPrint(" ",2)
