@@ -1,49 +1,9 @@
 #!/usr/bin/env python3
 
 #------------------------------------------------------------------------------
-#  __  __           _  __        __    _       _                             --
-# |  \/  | ___  ___| |_\ \      / /_ _| |_ ___| |__                          --
-# | |\/| |/ _ \/ __| '_ \ \ /\ / / _` | __/ __| '_ \                         --
-# | |  | |  __/\__ \ | | \ V  V / (_| | || (__| | | |                        --
-# |_|  |_|\___||___/_| |_|\_/\_/ \__,_|\__\___|_| |_|                        --
-#                                                                            --
-#------------------------------------------------------------------------------
-# Author: William McEvoy                                                     --
-# Created: Sept 8 2021                                                       --
-#                                                                            --
-# Purpose:  Send and receive messages from a Mesthtastic device.             --
-#                                                                            --
-#                                                                            --
-#------------------------------------------------------------------------------
-#  Sept 8, 2021                                                              --
-#   - adding formatting and comments                                         --
-#------------------------------------------------------------------------------
-#  Sept 10, 2021                                                             --
-#   - added Curses based text interface                                      --
-#   - class and function was created for GPSProbe                            --
-#------------------------------------------------------------------------------
-#  Sept 10, 2021                                                             --
-#   - added recursive function to decode packets of packets                  --
-#------------------------------------------------------------------------------
-#  Sept 26, 2021                                                             --
-#   - renamed project to MeshWatch                                           --
-#------------------------------------------------------------------------------
-#  Oct 01, 2021                                                              --
-#   - Added option to send X messages every Y seconds to all nodes for       --
-#     tesing the mesh network                                                --
-#   - node information now includes distance in meteres from basestation     --
-#------------------------------------------------------------------------------
-#                                                                            --
-# Credit to other projects:                                                  --
-#                                                                            --
-#  Intercepting SIGINT and CTL-C in Curses                                   --
-#  - https://gnosis.cx/publish/programming/charming_python_6.html            --
-#                                                                            --
-#  Meshtastic-python                                                         --
-#  - https://github.com/meshtastic/Meshtastic-python                         --
+# Send and receive signed or unsigned messages from a Mesthtastic device.
 #------------------------------------------------------------------------------
 
-#Final Version
 import meshtastic
 import meshtastic.serial_interface
 import meshtastic.tcp_interface
@@ -465,7 +425,7 @@ def ErrorHandler(ErrorMessage,TraceMessage,AdditionalInfo):
   print("")
   print("")
   time.sleep(1)
-  sys.exit('Good by for now...')
+  sys.exit('Meshwatch exiting...')
 
 
 
@@ -894,7 +854,7 @@ def SIGINT_handler(signal_received, frame):
   print('WARNING: Somethign bad happened.  SIGINT detected.')
   FinalCleanup(stdscr)
   print('** END OF LINE')
-  sys.exit('Good by for now...')
+  sys.exit('Meshwatch exiting...')
 
 
 
@@ -953,8 +913,8 @@ def ProcessKeypress(Key):
   # p = pause
   # q = quit
   # r = reboot
-  # s = Send message
-  # m = Send secure message
+  # u = Send unsigned message
+  # s = Send signed message
   # T = test messages
 
 
@@ -1013,7 +973,7 @@ def ProcessKeypress(Key):
 
 
 def SendUnsignedMessagePacket(interface, Message=''):
-    Window2.ScrollPrint("SendMessagePacket",2)
+    Window2.ScrollPrint("SendUnsignedMessagePacket",2)
     TheMessage=''
 
 
@@ -1051,7 +1011,7 @@ def SendUnsignedMessagePacket(interface, Message=''):
 
 
     Window4.ScrollPrint(" ",2)
-    Window4.ScrollPrint("==Packet SENT==========================================",3)
+    Window4.ScrollPrint("==Unsigned Packet SENT=================================",3)
     Window4.ScrollPrint("To:      All:",3)
     Window4.ScrollPrint("From:    BaseStation",3)
     Window4.ScrollPrint("Message: {}".format(TheMessage),3)
@@ -1067,7 +1027,7 @@ def SendUnsignedMessagePacket(interface, Message=''):
     Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
 
 def SendSignedMessagePacket(interface, Message=''):
-  Window2.ScrollPrint("SendMessagePacket",2)
+  Window2.ScrollPrint("SendSignedMessagePacket",2)
   TheMessage=''
 
 
@@ -1101,11 +1061,11 @@ def SendSignedMessagePacket(interface, Message=''):
   TheMessage = TheMessage[0:-1]
 
   #Send the message to the device
-  interface.sendText(TheMessage, wantAck=True)
+  interface.sendSignedText(TheMessage, wantAck=True)
 
 
   Window4.ScrollPrint(" ",2)
-  Window4.ScrollPrint("==Packet SENT==========================================",3)
+  Window4.ScrollPrint("==Signed Packet SENT===================================",3)
   Window4.ScrollPrint("To:      All:",3)
   Window4.ScrollPrint("From:    BaseStation",3)
   Window4.ScrollPrint("Message: {}".format(TheMessage),3)
@@ -1640,6 +1600,3 @@ if __name__=='__main__':
       TraceMessage = traceback.format_exc()
       AdditionalInfo = "Main pre-amble"
       ErrorHandler(ErrorMessage,TraceMessage,AdditionalInfo)
-
-
-# %%
