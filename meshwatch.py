@@ -701,10 +701,9 @@ def DecodePacket(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
 
     #Window4.ScrollPrint("{}END PACKET: {} ".format(Filler,PacketParent.upper()),2)
 
-# Called when a packet arrives
-
 
 def onReceive(packet, interface):
+    """Called when a packet arrives"""
     global PacketsReceived
     global PacketsSent
 
@@ -725,7 +724,7 @@ def onReceive(packet, interface):
                  FillerChar='', PrintSleep=PrintSleep)
 
     if (Message):
-        Window3.ScrollPrint("From: {} - {}".format(From,
+        Window3.ScrollPrint("Unsigned message from: {} - {}".format(From,
                             Message), 2, TimeStamp=True)
     Window4.ScrollPrint(
         "=======================================================", 2)
