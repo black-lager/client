@@ -959,7 +959,8 @@ def SendUnsignedMessagePacket(interface, Message=''):
     SendMessageWindow.Title = 'Press U or S to send a message'
     SendMessageWindow.DisplayTitle()
 
-    Window3.ScrollPrint("To: All - {}".format(TheMessage), 2, TimeStamp=True)
+    Window3.ScrollPrint(
+        "Unsigned message to: All - {}".format(TheMessage), 2, TimeStamp=True)
 
 
 def SendSignedMessagePacket(interface, Message=''):
@@ -1012,7 +1013,8 @@ def SendSignedMessagePacket(interface, Message=''):
     SendMessageWindow.Title = 'Press U or S to send a message'
     SendMessageWindow.DisplayTitle()
 
-    Window3.ScrollPrint("To: All - {}".format(TheMessage), 2, TimeStamp=True)
+    Window3.ScrollPrint(
+        "Signed message to: All - {}".format(TheMessage), 2, TimeStamp=True)
 
 
 def GoToSleep(TimeToSleep):
