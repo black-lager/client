@@ -970,7 +970,12 @@ def ProcessKeypress(Key):
   elif (Key == "t"):
     TestMesh(interface,5,10)
 
+  elif (Key == "p"):
+    SendKeysToNode(interface)
 
+
+def SendKeysToNode(interface):
+  exit
 
 def SendUnsignedMessagePacket(interface, Message=''):
     Window2.ScrollPrint("SendUnsignedMessagePacket",2)
@@ -1224,6 +1229,7 @@ def DisplayHelpInfo():
   HelpWindow.ScrollPrint("U - SEND unsigned message",7)
   HelpWindow.ScrollPrint("S - SEND signed message",7)
   HelpWindow.ScrollPrint("T - TEST mesh network",7)
+  HelpWindow.ScrollPrint("P - Assign Keys To Device",7)
   HelpWindow.ScrollPrint("SPACEBAR - Slow/Fast output",7)
 
 
@@ -1277,13 +1283,6 @@ def deg2num(lat_deg, lon_deg, zoom):
 
 def DisplayNodes(interface):
 
-    #experiments
-    #MyNode = meshtastic.Node(interface,1)
-    #TheURL = MyNode.getURL
-    #interface.showInfo()
-    #interface.showNodes()
-    #print (interface.nodes.values())
-    #time.sleep(1)
     Pad1.Clear()
     Pad1.PadPrint("--NODES IN MESH------------",3)
 
