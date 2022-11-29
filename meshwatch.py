@@ -40,6 +40,11 @@ from curses.textpad import Textbox, rectangle
 from signal import signal, SIGINT
 from sys import exit
 
+#import cipher suite, protobuf
+from meshtastic_node import persona_pb2
+from serial_interface.serial_helper import serialHelper
+from cipher_suite.nacl_suite import naclSuite
+
 #------------------------------------------------------------------------------
 # Variable Declaration                                                       --
 #------------------------------------------------------------------------------
@@ -975,7 +980,61 @@ def ProcessKeypress(Key):
 
 
 def SendKeysToNode(interface):
-  exit
+  node_list = []
+  suite = naclSuite()
+
+  Window2.ScrollPrint("SendSignedMessagePacket",2)
+  TheMessage=''
+
+
+  InputMessageWindow.TextWindow.move(0,0)
+  #Change color temporarily
+  SendMessageWindow.TextWindow.attron(curses.color_pair(2))
+  SendMessageWindow.TextWindow.border()
+  SendMessageWindow.TitleColor = 2
+  SendMessageWindow.Title = 'Press CTL-G to send'
+  SendMessageWindow.DisplayTitle()
+
+  SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
+
+  SendMessageWindow.TextWindow.refresh()
+
+  #Show cursor
+
+  curses.curs_set(True)
+
+  InputMessageWindow.TextWindow.erase()
+  InputMessageBox.edit()
+  curses.curs_set(False)
+
+  for node in interface.nodes.values():
+    new_tuple = (node['user']['longName'], node['user']['macaddr'], node['num'])
+    node_list.append(new_tuple)
+
+
+  for node in node_list:
+      local_name = node[0]
+      mac_addr = node[1]
+      node_num = node[2]
+      public_key, private_key = suite.generate_key_pairs(local_name)
+      suite.add_person_to_book(local_name,mac_addr,node_num, bytes(public_key), bytes(private_key))
+      interface.sendData(public_key, wantAck=True)
+      interface.sendData(private_key, wantAck=True)
+  suite.write_all_secrets_to_file()
+
+
+  Window4.ScrollPrint(" ",2)
+  Window4.ScrollPrint("==Keys Sent SENT===================================",3)
+  Window4.ScrollPrint("=======================================================",3)
+  Window4.ScrollPrint(" ",2)
+
+  SendMessageWindow.Clear()
+  SendMessageWindow.TitleColor = 2
+  SendMessageWindow.Title = 'Press U or S to send a message'
+  SendMessageWindow.DisplayTitle()
+
+
+  Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
 
 def SendUnsignedMessagePacket(interface, Message=''):
     Window2.ScrollPrint("SendUnsignedMessagePacket",2)
