@@ -37,7 +37,12 @@ from curses.textpad import Textbox, rectangle
 from signal import signal, SIGINT
 from sys import exit
 
-# ------------------------------------------------------------------------------
+#import cipher suite, protobuf
+from meshtastic_node import persona_pb2
+from serial_interface.serial_helper import serialHelper
+from cipher_suite.nacl_suite import naclSuite
+
+#------------------------------------------------------------------------------
 # Variable Declaration                                                       --
 # ------------------------------------------------------------------------------
 
@@ -912,6 +917,66 @@ def ProcessKeypress(Key):
     elif (Key == "t"):
         TestMesh(interface, 5, 10)
 
+    elif (Key == "p"):
+        SendKeysToNode(interface)
+
+
+def SendKeysToNode(interface):
+  node_list = []
+  suite = naclSuite()
+
+  Window2.ScrollPrint("SendSignedMessagePacket",2)
+  TheMessage=''
+
+
+  InputMessageWindow.TextWindow.move(0,0)
+  #Change color temporarily
+  SendMessageWindow.TextWindow.attron(curses.color_pair(2))
+  SendMessageWindow.TextWindow.border()
+  SendMessageWindow.TitleColor = 2
+  SendMessageWindow.Title = 'Press CTL-G to send'
+  SendMessageWindow.DisplayTitle()
+
+  SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
+
+  SendMessageWindow.TextWindow.refresh()
+
+  #Show cursor
+
+  curses.curs_set(True)
+
+  InputMessageWindow.TextWindow.erase()
+  InputMessageBox.edit()
+  curses.curs_set(False)
+
+  for node in interface.nodes.values():
+    new_tuple = (node['user']['longName'], node['user']['macaddr'], node['num'])
+    node_list.append(new_tuple)
+
+
+  for node in node_list:
+      local_name = node[0]
+      mac_addr = node[1]
+      node_num = node[2]
+      public_key, private_key = suite.generate_key_pairs(local_name)
+      suite.add_person_to_book(local_name,mac_addr,node_num, bytes(public_key), bytes(private_key))
+      interface.sendData(public_key, wantAck=True)
+      interface.sendData(private_key, wantAck=True)
+  suite.write_all_secrets_to_file()
+
+
+  Window4.ScrollPrint(" ",2)
+  Window4.ScrollPrint("==Keys Sent SENT===================================",3)
+  Window4.ScrollPrint("=======================================================",3)
+  Window4.ScrollPrint(" ",2)
+
+  SendMessageWindow.Clear()
+  SendMessageWindow.TitleColor = 2
+  SendMessageWindow.Title = 'Press U or S to send a message'
+  SendMessageWindow.DisplayTitle()
+
+
+  Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
 
 def SendUnsignedMessagePacket(interface, Message=''):
     Window2.ScrollPrint("SendUnsignedMessagePacket", 2)
@@ -1150,16 +1215,18 @@ def UpdateStatusWindow(NewDeviceStatus='',
 
 
 def DisplayHelpInfo():
-    HelpWindow.ScrollPrint("C - CLEAR Screen", 7)
-    HelpWindow.ScrollPrint("I - Request node INFO", 7)
-    HelpWindow.ScrollPrint("L - Show LOGS", 7)
-    HelpWindow.ScrollPrint("N - Show all NODES", 7)
-    HelpWindow.ScrollPrint("Q - QUIT program", 7)
-    HelpWindow.ScrollPrint("R - RESTART MeshWatch", 7)
-    HelpWindow.ScrollPrint("U - SEND unsigned message", 7)
-    HelpWindow.ScrollPrint("S - SEND signed message", 7)
-    HelpWindow.ScrollPrint("T - TEST mesh network", 7)
-    HelpWindow.ScrollPrint("SPACEBAR - Slow/Fast output", 7)
+  HelpWindow.ScrollPrint("C - CLEAR Screen",7)
+  HelpWindow.ScrollPrint("I - Request node INFO",7)
+  HelpWindow.ScrollPrint("L - Show LOGS",7)
+  HelpWindow.ScrollPrint("N - Show all NODES",7)
+  HelpWindow.ScrollPrint("Q - QUIT program",7)
+  HelpWindow.ScrollPrint("R - RESTART MeshWatch",7)
+  HelpWindow.ScrollPrint("U - SEND unsigned message",7)
+  HelpWindow.ScrollPrint("S - SEND signed message",7)
+  HelpWindow.ScrollPrint("T - TEST mesh network",7)
+  HelpWindow.ScrollPrint("P - Assign Keys To Device",7)
+  HelpWindow.ScrollPrint("SPACEBAR - Slow/Fast output",7)
+
 
 
 def GetMyNodeInfo(interface):
@@ -1207,13 +1274,6 @@ def deg2num(lat_deg, lon_deg, zoom):
 
 
 def DisplayNodes(interface):
-    # experiments
-    #MyNode = meshtastic.Node(interface,1)
-    #TheURL = MyNode.getURL
-    # interface.showInfo()
-    # interface.showNodes()
-    #print (interface.nodes.values())
-    # time.sleep(1)
     Pad1.Clear()
     Pad1.PadPrint("--NODES IN MESH------------", 3)
 
