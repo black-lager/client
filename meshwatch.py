@@ -715,7 +715,8 @@ def onReceive(packet, interface):
         "==Packet RECEIVED======================================", 2)
 
     Decoded = packet.get('decoded')
-    Message = Decoded.get('text')
+    UnsignedMessage = Decoded.get('text')
+    SignedMessage = Decoded.get('signed-text')
     To = packet.get('to')
     From = packet.get('from')
 
@@ -723,9 +724,13 @@ def onReceive(packet, interface):
     DecodePacket('MainPacket', packet, Filler='',
                  FillerChar='', PrintSleep=PrintSleep)
 
-    if (Message):
+    if (UnsignedMessage):
         Window3.ScrollPrint("Unsigned message from: {} - {}".format(From,
-                            Message), 2, TimeStamp=True)
+                            UnsignedMessage), 2, TimeStamp=True)
+    elif (SignedMessage):
+        Window3.ScrollPrint("Signed message from: {} - {}".format(From,
+                            SignedMessage), 2, TimeStamp=True)
+
     Window4.ScrollPrint(
         "=======================================================", 2)
     Window4.ScrollPrint(" ", 2)
