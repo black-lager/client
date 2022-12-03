@@ -5,6 +5,7 @@
 # ------------------------------------------------------------------------------
 
 from textwindow import TextWindow
+from textpad import TextPad
 from utils import *
 import meshtastic
 import meshtastic.serial_interface
@@ -112,70 +113,6 @@ global PriorityOutput
 
 PrintSleep = 0.1
 OldPrintSleep = PrintSleep
-
-# ------------------------------------------------------------------------------
-# Functions / Classes                                                        --
-# ------------------------------------------------------------------------------
-
-
-
-
-
-class TextPad(object):
-    # use this as a virtual notepad
-    # write a large amount of data to it, then display a section of it on the screen
-    # to have a border, use another window with a border
-    def __init__(self, name, rows, columns, y1, x1, y2, x2, ShowBorder, BorderColor):
-        self.name = name
-        self.rows = rows
-        self.columns = columns
-        self.y1 = y1  # These are coordinates for the window corners on the screen
-        self.x1 = x1  # These are coordinates for the window corners on the screen
-        self.y2 = y2  # These are coordinates for the window corners on the screen
-        self.x2 = x2  # These are coordinates for the window corners on the screen
-        self.ShowBorder = ShowBorder
-        self.BorderColor = BorderColor  # pre defined text colors 1-7
-        self.TextPad = curses.newpad(self.rows, self.columns)
-        self.PreviousLineColor = 2
-
-    def PadPrint(self, PrintLine, Color=2, TimeStamp=False):
-        # print to the pad
-        try:
-            self.TextPad.idlok(1)
-            self.TextPad.scrollok(1)
-
-            current_time = datetime.now().strftime("%H:%M:%S")
-            if (TimeStamp):
-                PrintLine = current_time + ": " + PrintLine
-
-            # expand tabs to X spaces, pad the string with space then truncate
-            PrintLine = PrintLine.expandtabs(4)
-            PrintLine = PrintLine.ljust(self.columns, ' ')
-
-            self.TextPad.attron(curses.color_pair(Color))
-            self.TextPad.addstr(PrintLine)
-            self.TextPad.attroff(curses.color_pair(Color))
-
-            # We will refresh after a series of calls instead of every update
-            self.TextPad.refresh(0, 0, self.y1, self.x1,
-                                 self.y1 + self.rows, self.x1 + self.columns)
-
-        except Exception as ErrorMessage:
-            time.sleep(2)
-            TraceMessage = traceback.format_exc()
-            AdditionalInfo = "PrintLine: " + PrintLine
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
-
-    def Clear(self):
-        try:
-            self.TextPad.erase()
-            #self.TextPad.noutrefresh(0,0,self.y1,self.x1,self.y1 + self.rows,self.x1 + self.columns)
-            self.TextPad.refresh(0, 0, self.y1, self.x1,
-                                 self.y1 + self.rows, self.x1 + self.columns)
-        except Exception as ErrorMessage:
-            TraceMessage = traceback.format_exc()
-            AdditionalInfo = "erasing textpad"
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
 
 # --------------------------------------
@@ -311,29 +248,29 @@ def CreateTextWindows():
 
         # Create windows
         # name,  rows,      columns,   y1,    x1,    y2,    x2,ShowBorder,BorderColor,TitleColor):
-        TitleWindow = TextWindow('TitleWindow', 1, 50, 0, 0, 0, 50, 'N', 0, 0)
+        TitleWindow = TextWindow('TitleWindow', 1, 50, 0, 0, 0, 50, 'N', 0, 0, stdscr)
         StatusWindow = TextWindow(
-            'StatusWindow', 1, 50, 0, 51, 0, 100, 'N', 0, 0)
+            'StatusWindow', 1, 50, 0, 51, 0, 100, 'N', 0, 0, stdscr)
         StatusWindow2 = TextWindow(
-            'StatusWindow2', 1, 30, 0, 101, 0, 130, 'N', 0, 0)
+            'StatusWindow2', 1, 30, 0, 101, 0, 130, 'N', 0, 0, stdscr)
         Window1 = TextWindow('Window1', Window1Height, Window1Length,
-                             Window1y1, Window1x1, Window1y2, Window1x2, 'Y', 2, 2)
+                             Window1y1, Window1x1, Window1y2, Window1x2, 'Y', 2, 2, stdscr)
         Window2 = TextWindow('Window2', Window2Height, Window2Length,
-                             Window2y1, Window2x1, Window2y2, Window2x2, 'Y', 2, 2)
+                             Window2y1, Window2x1, Window2y2, Window2x2, 'Y', 2, 2, stdscr)
         Window3 = TextWindow('Window3', Window3Height, Window3Length,
-                             Window3y1, Window3x1, Window3y2, Window3x2, 'Y', 3, 3)
+                             Window3y1, Window3x1, Window3y2, Window3x2, 'Y', 3, 3, stdscr)
         Window4 = TextWindow('Window4', Window4Height, Window4Length,
-                             Window4y1, Window4x1, Window4y2, Window4x2, 'Y', 5, 5)
+                             Window4y1, Window4x1, Window4y2, Window4x2, 'Y', 5, 5, stdscr)
         Window5 = TextWindow('Window5', Window5Height, Window5Length,
-                             Window5y1, Window5x1, Window5y2, Window5x2, 'Y', 6, 6)
+                             Window5y1, Window5x1, Window5y2, Window5x2, 'Y', 6, 6, stdscr)
         HelpWindow = TextWindow('HelpWindow', HelpWindowHeight, HelpWindowLength,
-                                HelpWindowy1, HelpWindowx1, HelpWindowy2, HelpWindowx2, 'Y', 7, 7)
+                                HelpWindowy1, HelpWindowx1, HelpWindowy2, HelpWindowx2, 'Y', 7, 7, stdscr)
         SendMessageWindow = TextWindow('SendMessageWindow', SendMessageWindowHeight, SendMessageWindowLength,
-                                       SendMessageWindowy1, SendMessageWindowx1, SendMessageWindowy2, SendMessageWindowx2, 'Y', 7, 7)
+                                       SendMessageWindowy1, SendMessageWindowx1, SendMessageWindowy2, SendMessageWindowx2, 'Y', 7, 7, stdscr)
         InputMessageWindow = TextWindow('InputMessageWindow', InputMessageWindowHeight, InputMessageWindowLength,
-                                        InputMessageWindowy1, InputMessageWindowx1, InputMessageWindowy2, InputMessageWindowx2, 'N', 7, 7)
+                                        InputMessageWindowy1, InputMessageWindowx1, InputMessageWindowy2, InputMessageWindowx2, 'N', 7, 7, stdscr)
         Pad1 = TextPad('Pad1', Pad1Lines, Pad1Columns,
-                       Pad1y1, Pad1x1, Pad1y2, Pad1x2, 'N', 5)
+                       Pad1y1, Pad1x1, Pad1y2, Pad1x2, 'N', 5, stdscr)
 
         # Display the title
         #StatusWindow.ScrollPrint("Preparing devices",6)
@@ -442,8 +379,6 @@ def DecodePacket(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
 
             if (PrintSleep > 0):
                 time.sleep(PrintSleep)
-
-            #Pad1.PadPrint("{} - {}".format(PacketParent,Key),2)
 
             # if the value paired with this key is another dictionary, keep digging
             if isinstance(Value, collections.abc.Mapping):
@@ -652,11 +587,11 @@ def ProcessKeypress(Key):
         GetMyNodeInfo(interface)
 
     elif (Key == "l"):
-        Pad1.Clear()
+        Pad1.clear()
         DisplayLogs(0.01)
 
     elif (Key == "n"):
-        Pad1.Clear()
+        Pad1.clear()
         DisplayNodes(interface)
 
     elif (Key == "q"):
@@ -1038,20 +973,19 @@ def deg2num(lat_deg, lon_deg, zoom):
 
 
 def DisplayNodes(interface):
-    Pad1.Clear()
-    Pad1.PadPrint("--NODES IN MESH------------", 3)
+    Pad1.clear()
+    Pad1.pad_print("--NODES IN MESH------------", 3)
 
     if (PriorityOutput == True):
         time.sleep(5)
 
     try:
-
         # interface.nodes.values() will return a dictionary
         for node in (interface.nodes.values()):
-            Pad1.PadPrint("NAME: {}".format(node['user']['longName']), 3)
-            Pad1.PadPrint("NODE: {}".format(node['num']), 3)
-            Pad1.PadPrint("ID:   {}".format(node['user']['id']), 3)
-            Pad1.PadPrint("MAC:  {}".format(node['user']['macaddr']), 3)
+            Pad1.pad_print("NAME: {}".format(node['user']['longName']), 3)
+            Pad1.pad_print("NODE: {}".format(node['num']), 3)
+            Pad1.pad_print("ID:   {}".format(node['user']['id']), 3)
+            Pad1.pad_print("MAC:  {}".format(node['user']['macaddr']), 3)
 
             if 'position' in node.keys():
 
@@ -1061,33 +995,33 @@ def DisplayNodes(interface):
                     Lon = node['position']['longitude']
 
                     xtile, ytile = deg2num(Lat, Lon, 10)
-                    Pad1.PadPrint("Tile: {}/{}".format(xtile, ytile), 3)
-                    Pad1.PadPrint("LAT:  {}".format(
+                    Pad1.pad_print("Tile: {}/{}".format(xtile, ytile), 3)
+                    Pad1.pad_print("LAT:  {}".format(
                         node['position']['latitude']), 3)
-                    Pad1.PadPrint("LONG: {}".format(
+                    Pad1.pad_print("LONG: {}".format(
                         node['position']['longitude']), 3)
                     Distance = geopy.distance.geodesic(
                         (Lat, Lon), (BaseLat, BaseLon)).m
-                    Pad1.PadPrint("Distance: {:.3f} m".format(Distance), 3)
+                    Pad1.pad_print("Distance: {:.3f} m".format(Distance), 3)
 
                 if 'batteryLevel' in node['position']:
                     Battery = node['position']['batteryLevel']
-                    Pad1.PadPrint("Battery:   {}".format(Battery), 3)
+                    Pad1.pad_print("Battery:   {}".format(Battery), 3)
 
             if 'lastHeard' in node.keys():
                 LastHeardDatetime = time.strftime(
                     '%Y-%m-%d %H:%M:%S', time.localtime(node['lastHeard']))
-                Pad1.PadPrint("LastHeard: {}".format(LastHeardDatetime), 3)
+                Pad1.pad_print("LastHeard: {}".format(LastHeardDatetime), 3)
 
             time.sleep(PrintSleep)
-            Pad1.PadPrint("", 3)
+            Pad1.pad_print("", 3)
 
     except Exception as ErrorMessage:
         TraceMessage = traceback.format_exc()
         AdditionalInfo = "Processing node info"
         ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
-    Pad1.PadPrint("---------------------------", 3)
+    Pad1.pad_print("---------------------------", 3)
 
 
 def exec_process(cmdline, silent, input=None, **kwargs):
@@ -1141,11 +1075,11 @@ def DisplayLogs(ScrollSleep):
             f = tail(f, 50)
 
             for line in f:
-                Pad1.PadPrint(line, 3)
+                Pad1.pad_print(line, 3)
                 time.sleep(ScrollSleep)
                 PollKeyboard()
     except IOError:
-        Pad1.PadPrint("Could not open /var/log/kern.log.", 3)
+        Pad1.pad_print("Could not open /var/log/kern.log.", 3)
 
     PriorityOutput = False
     Window2.ScrollPrint("PriorityOutput: deactivated")

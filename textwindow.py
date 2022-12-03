@@ -68,10 +68,6 @@ class TextWindow(object):
         PrintableString = PrintLine[0:self.DisplayColumns]
         RemainingString = PrintLine[self.DisplayColumns+1:]
 
-        # Pad1.PadPrint("PrintLine:{}".format(PrintLine),2,TimeStamp=True)
-        # Pad1.PadPrint("Printable:{}".format(PrintableString),2,TimeStamp=True)
-        # Pad1.PadPrint("Remaining:{}".format(RemainingString),2,TimeStamp=True)
-
         try:
 
             while (len(PrintableString) > 0):
