@@ -1,4 +1,4 @@
-from utils import ErrorHandler
+from utils import error_handler
 import curses
 from datetime import datetime
 import time
@@ -49,7 +49,7 @@ class TextPad(object):
             time.sleep(2)
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "PrintLine: " + PrintLine
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, self.stdscr)
+            error_handler(ErrorMessage, TraceMessage, AdditionalInfo, self.stdscr)
 
     def clear(self):
         try:
@@ -60,4 +60,4 @@ class TextPad(object):
         except Exception as ErrorMessage:
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "erasing textpad"
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, self.stdscr)
+            error_handler(ErrorMessage, TraceMessage, AdditionalInfo, self.stdscr)

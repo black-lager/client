@@ -1,4 +1,4 @@
-from utils import ErrorHandler
+from utils import error_handler
 import curses
 from datetime import datetime
 import traceback
@@ -46,7 +46,7 @@ class TextWindow(object):
             self.CurrentRow = 0
             self.StartColumn = 0
 
-    def ScrollPrint(self, PrintLine, Color=2, TimeStamp=False, BoldLine=True):
+    def scroll_print(self, PrintLine, Color=2, TimeStamp=False, BoldLine=True):
         # print(PrintLine)
         # for now the string is printed in the window and the current row is incremented
         # when the counter reaches the end of the window, we will wrap around to the top
@@ -139,9 +139,9 @@ class TextWindow(object):
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "PrintLine: {}".format(PrintLine)
 
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, self.stdscr)
+            error_handler(ErrorMessage, TraceMessage, AdditionalInfo, self.stdscr)
 
-    def WindowPrint(self, y, x, PrintLine, Color=2):
+    def window_print(self, y, x, PrintLine, Color=2):
         # print at a specific coordinate within the window
         # try:
 
@@ -158,7 +158,7 @@ class TextWindow(object):
 
         self.TextWindow.refresh()
 
-    def DisplayTitle(self):
+    def display_title(self):
         # display the window title
 
         Color = 0
@@ -181,14 +181,14 @@ class TextWindow(object):
         except Exception as ErrorMessage:
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "Title: " + Title
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, self.stdscr)
+            error_handler(ErrorMessage, TraceMessage, AdditionalInfo, self.stdscr)
 
-    def Clear(self):
+    def clear(self):
         self.TextWindow.erase()
         self.TextWindow.attron(curses.color_pair(self.BorderColor))
         self.TextWindow.border()
         self.TextWindow.attroff(curses.color_pair(self.BorderColor))
-        self.DisplayTitle()
+        self.display_title()
 
         # self.TextWindow.refresh()
         if (self.ShowBorder == 'Y'):

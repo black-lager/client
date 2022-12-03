@@ -13,14 +13,11 @@ import meshtastic.tcp_interface
 import time
 from datetime import datetime
 import traceback
-from meshtastic.mesh_pb2 import _HARDWAREMODEL
-from meshtastic.node import Node
 from pubsub import pub
 import argparse
 import collections
 import sys
 import os
-import math
 
 # to review logfiles
 import subprocess
@@ -30,21 +27,18 @@ import geopy.distance
 
 # For capturing keypresses and drawing text boxes
 import curses
-from curses import wrapper
-from curses.textpad import Textbox, rectangle
+from curses.textpad import Textbox
 
 # for capturing ctl-c
 from signal import signal, SIGINT
 from sys import exit
 
-#import cipher suite, protobuf
-from meshtastic_node import persona_pb2
-from serial_interface.serial_helper import serialHelper
+# cipher suite
 from cipher_suite.nacl_suite import naclSuite
 
-#------------------------------------------------------------------------------
-# Variable Declaration                                                       --
-# ------------------------------------------------------------------------------
+#
+# Variable Declaration
+#
 
 NAME = 'MeshWatch'
 DESCRIPTION = "Send and recieve messages to a MeshTastic device"
@@ -62,7 +56,7 @@ ifparser.add_argument('-i', '--host', type=str,
 args = parser.parse_args()
 
 # process arguments and assign values to local variables
-if (args.send):
+if args.send:
     SendMessage = True
     TheMessage = args.send
 else:
@@ -70,15 +64,6 @@ else:
 
 TimeToSleep = args.time
 
-# ------------------------------------------------------------------------------
-# Initialize Curses                                                          --
-# ------------------------------------------------------------------------------
-
-# Text windows
-#stdscr = curses.initscr()
-
-# hide the cursor
-# curses.curs_set(0)
 
 global PrintSleep  # controls how fast the screens scroll
 global OldPrintSleep  # controls how fast the screens scroll
@@ -119,7 +104,7 @@ OldPrintSleep = PrintSleep
 # Initialize Text window / pads      --
 # --------------------------------------
 
-def CreateTextWindows():
+def create_text_windows():
 
     global StatusWindow
     global TitleWindow
@@ -272,13 +257,6 @@ def CreateTextWindows():
         Pad1 = TextPad('Pad1', Pad1Lines, Pad1Columns,
                        Pad1y1, Pad1x1, Pad1y2, Pad1x2, 'N', 5, stdscr)
 
-        # Display the title
-        #StatusWindow.ScrollPrint("Preparing devices",6)
-        #Window1.ScrollPrint("Channel Info",2)
-        #Window2.ScrollPrint("Debug Info",2)
-        # Window3.ScrollPrint("Alerts",2)
-        # Window4.ScrollPrint("Details",2)
-
         # each title needs to be initialized or you get errors in scrollprint
         TitleWindow.Title,   TitleWindow.TitleColor = "--MeshWatch 1.0--", 2
         StatusWindow.Title,  StatusWindow.TitleColor = "", 2
@@ -291,16 +269,16 @@ def CreateTextWindows():
         HelpWindow.Title, HelpWindow.TitleColor = "Help", 7
         SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press U or S to send a message", 7
 
-        TitleWindow.WindowPrint(0, 0, TitleWindow.Title)
-        Window1.DisplayTitle()
-        Window2.DisplayTitle()
-        Window3.DisplayTitle()
-        Window4.DisplayTitle()
-        Window5.DisplayTitle()
-        HelpWindow.DisplayTitle()
-        SendMessageWindow.DisplayTitle()
+        TitleWindow.window_print(0, 0, TitleWindow.Title)
+        Window1.display_title()
+        Window2.display_title()
+        Window3.display_title()
+        Window4.display_title()
+        Window5.display_title()
+        HelpWindow.display_title()
+        SendMessageWindow.display_title()
 
-        DisplayHelpInfo()
+        display_help_info()
 
         # Prepare edit window for send message
         InputMessageBox = Textbox(InputMessageWindow.TextWindow)
@@ -308,41 +286,15 @@ def CreateTextWindows():
     except Exception as ErrorMessage:
         TraceMessage = traceback.format_exc()
         AdditionalInfo = "Creating text windows"
-        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
+        error_handler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
 
 # --------------------------------------
 # Meshtastic functions               --
 # --------------------------------------
 
-def fromStr(valstr):
-    """try to parse as int, float or bool (and fallback to a string as last resort)
-    Returns: an int, bool, float, str or byte array (for strings of hex digits)
-    Args:
-        valstr (string): A user provided string
-    """
-    if (len(valstr) == 0):  # Treat an empty string as an empty bytes
-        val = bytes()
-    elif (valstr.startswith('0x')):
-        # if needed convert to string with asBytes.decode('utf-8')
-        val = bytes.fromhex(valstr[2:])
-    elif valstr == True:
-        val = True
-    elif valstr == False:
-        val = False
-    else:
-        try:
-            val = int(valstr)
-        except ValueError:
-            try:
-                val = float(valstr)
-            except ValueError:
-                val = valstr  # Not a float or an int, assume string
 
-    return val
-
-
-def DecodePacket(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
+def decode_packet(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
     global DeviceStatus
     global DeviceName
     global DevicePort
@@ -354,15 +306,15 @@ def DecodePacket(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
 
     # This is a recursive funtion that will decode a packet (get key/value pairs from a dictionary)
     # if the value is itself a dictionary, recurse
-    Window2.ScrollPrint("DecodePacket", 2, TimeStamp=True)
+    Window2.scroll_print("DecodePacket", 2, TimeStamp=True)
     #Filler = ('-' *  len(inspect.stack(0)))
 
     # used to indent packets
     if (PacketParent.upper() != 'MAINPACKET'):
         Filler = Filler + FillerChar
 
-    Window4.ScrollPrint("{}".format(PacketParent).upper(), 2)
-    UpdateStatusWindow(NewLastPacketType=PacketParent)
+    Window4.scroll_print("{}".format(PacketParent).upper(), 2)
+    update_status_window(NewLastPacketType=PacketParent)
 
     # adjust the input to slow down the output for that cool retro feel
     if (PrintSleep > 0):
@@ -384,38 +336,38 @@ def DecodePacket(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
             if isinstance(Value, collections.abc.Mapping):
 
                 # Print the name/type of the packet
-                Window4.ScrollPrint(" ", 2)
+                Window4.scroll_print(" ", 2)
                 # Window4.ScrollPrint("{}".format(Key).upper(),2)
                 LastPacketType = Key.upper()
 
-                DecodePacket("{}/{}".format(PacketParent, Key).upper(),
-                             Value, Filler, FillerChar, PrintSleep=PrintSleep)
+                decode_packet("{}/{}".format(PacketParent, Key).upper(),
+                              Value, Filler, FillerChar, PrintSleep=PrintSleep)
 
             else:
                 # Print KEY if not RAW (gotta decode those further, or ignore)
                 if (Key == 'raw'):
-                    Window4.ScrollPrint(
+                    Window4.scroll_print(
                         "{}  RAW value not yet suported by DecodePacket function".format(Filler), 2)
                 else:
-                    Window4.ScrollPrint(
+                    Window4.scroll_print(
                         "  {}{}: {}".format(Filler, Key, Value), 2)
 
     else:
-        Window2.ScrollPrint("Warning: Not a packet!", 5, TimeStamp=True)
+        Window2.scroll_print("Warning: Not a packet!", 5, TimeStamp=True)
 
     #Window4.ScrollPrint("{}END PACKET: {} ".format(Filler,PacketParent.upper()),2)
 
 
-def onReceive(packet, interface):
+def on_receive(packet, interface):
     """Called when a packet arrives"""
     global PacketsReceived
     global PacketsSent
 
     PacketsReceived = PacketsReceived + 1
 
-    Window2.ScrollPrint("onReceive", 2, TimeStamp=True)
-    Window4.ScrollPrint(" ", 2)
-    Window4.ScrollPrint(
+    Window2.scroll_print("onReceive", 2, TimeStamp=True)
+    Window4.scroll_print(" ", 2)
+    Window4.scroll_print(
         "==Packet RECEIVED======================================", 2)
 
     Decoded = packet.get('decoded')
@@ -425,96 +377,89 @@ def onReceive(packet, interface):
     From = packet.get('from')
 
     # Even better method, use this recursively to decode all the packets of packets
-    DecodePacket('MainPacket', packet, Filler='',
-                 FillerChar='', PrintSleep=PrintSleep)
+    decode_packet('MainPacket', packet, Filler='',
+                  FillerChar='', PrintSleep=PrintSleep)
 
     if (UnsignedMessage):
-        Window3.ScrollPrint("Unsigned message from: {} - {}".format(From,
-                            UnsignedMessage), 2, TimeStamp=True)
+        Window3.scroll_print("Unsigned message from: {} - {}".format(From,
+                                                                     UnsignedMessage), 2, TimeStamp=True)
     elif (SignedMessage):
-        Window3.ScrollPrint("Signed message from: {} - {}".format(From,
-                            SignedMessage), 2, TimeStamp=True)
+        Window3.scroll_print("Signed message from: {} - {}".format(From,
+                                                                   SignedMessage), 2, TimeStamp=True)
 
-    Window4.ScrollPrint(
+    Window4.scroll_print(
         "=======================================================", 2)
-    Window4.ScrollPrint(" ", 2)
-
-    # example of scrolling the window
-    # Window4.TextWindow.idlok(1)
-    # Window4.TextWindow.scrollok(1)
-    # Window4.TextWindow.scroll(10)
-    # Window4.TextWindow.scrollok(0)
+    Window4.scroll_print(" ", 2)
 
 
 # called when we (re)connect to the radio
-def onConnectionEstablished(interface, topic=pub.AUTO_TOPIC):
+def on_connection_established(interface, topic=pub.AUTO_TOPIC):
     global PriorityOutput
 
     if (PriorityOutput == False):
 
         # Window2.ScrollPrint('onConnectionEstablished',2,TimeStamp=True)
         #Window1.WindowPrint(1,1,"Status: CONNECTED",2)
-        UpdateStatusWindow(NewDeviceStatus="CONNECTED", Color=2)
+        update_status_window(NewDeviceStatus="CONNECTED", Color=2)
 
         From = "BaseStation"
         To = "All"
         current_time = datetime.now().strftime("%H:%M:%S")
         Message = "MeshWatch active,  please respond. [{}]".format(
             current_time)
-        Window3.ScrollPrint("From: {} - {}".format(From,
-                            Message, To), 2, TimeStamp=True)
+        Window3.scroll_print("From: {} - {}".format(From,
+                                                    Message, To), 2, TimeStamp=True)
 
         try:
             interface.sendText(Message, wantAck=True)
-            Window4.ScrollPrint("", 2)
-            Window4.ScrollPrint(
+            Window4.scroll_print("", 2)
+            Window4.scroll_print(
                 "==Packet SENT==========================================", 3)
-            Window4.ScrollPrint("To:     {}:".format(To), 3)
-            Window4.ScrollPrint("From    {}:".format(From), 3)
-            Window4.ScrollPrint("Message {}:".format(Message), 3)
-            Window4.ScrollPrint(
+            Window4.scroll_print("To:     {}:".format(To), 3)
+            Window4.scroll_print("From    {}:".format(From), 3)
+            Window4.scroll_print("Message {}:".format(Message), 3)
+            Window4.scroll_print(
                 "=======================================================", 3)
-            Window4.ScrollPrint("", 2)
+            Window4.scroll_print("", 2)
 
         except Exception as ErrorMessage:
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "Sending text message ({})".format(Message)
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
+            error_handler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
 
 # called when we (re)connect to the radio
-def onConnectionLost(interface, topic=pub.AUTO_TOPIC):
+def on_connection_lost(interface, topic=pub.AUTO_TOPIC):
     global PriorityOutput
     if (PriorityOutput == False):
-        Window2.ScrollPrint('onConnectionLost', 2, TimeStamp=True)
-        UpdateStatusWindow(NewDeviceStatus="DISCONNECTED", Color=1)
+        Window2.scroll_print('onConnectionLost', 2, TimeStamp=True)
+        update_status_window(NewDeviceStatus="DISCONNECTED", Color=1)
 
 
 # called when we (re)connect to the radio
-def onNodeUpdated(interface, topic=pub.AUTO_TOPIC):
+def on_node_update(interface, topic=pub.AUTO_TOPIC):
     global PriorityOutput
     if (PriorityOutput == False):
-        Window2.ScrollPrint('onNodeUpdated', 2, TimeStamp=True)
-        Window1.WindowPrint(1, 4, 'UPDATE RECEIVED', 1, TimeStamp=True)
-        Window4.ScrollPrint("", 2)
+        Window2.scroll_print('onNodeUpdated', 2, TimeStamp=True)
+        Window1.window_print(1, 4, 'UPDATE RECEIVED', 1, TimeStamp=True)
+        Window4.scroll_print("", 2)
 
 
-def SIGINT_handler(signal_received, frame):
+def sigint_handler(signal_received, frame):
     # Handle any cleanup here
     print('WARNING: Somethign bad happened.  SIGINT detected.')
-    FinalCleanup(stdscr)
+    final_cleanup(stdscr)
     print('** END OF LINE')
     sys.exit('Meshwatch exiting...')
 
 
-def PollKeyboard():
+def poll_keyboard():
     global stdscr
     global Window2
     global interface
 
-    # Window2.ScrollPrint("PollKeyboard",2,TimeStamp=True)
-    ReturnChar = ""
-    c = ""
+    return_char = ""
+
     # curses.filter()
     curses.noecho()
 
@@ -527,7 +472,7 @@ def PollKeyboard():
     if (c >= '0' and c <= '9'):
         #print ("Digit detected")
         #StatusWindow.ScrollPrint("Digit Detected",2)
-        ReturnChar = (c)
+        return_char = c
 
     if (c != ""):
         #print ("----------------")
@@ -535,11 +480,11 @@ def PollKeyboard():
         #print ("----------------")
         OutputLine = "Key Pressed: " + c
         # Window2.ScrollPrint(OutputLine,4)
-        ProcessKeypress(c)
-    return ReturnChar
+        process_keypress(c)
+    return return_char
 
 
-def ProcessKeypress(Key):
+def process_keypress(Key):
     global stdscr
     global StatusWindow
     global Window2
@@ -549,10 +494,9 @@ def ProcessKeypress(Key):
     global PriorityOutput
     global PrintSleep
     global OldPrintSleep
-    count = 0
 
     OutputLine = "KEYPRESS: [" + str(Key) + "]"
-    Window2.ScrollPrint(OutputLine, 5)
+    Window2.scroll_print(OutputLine, 5)
     # c = clear screen
     # i = get node info
     # l = show system LOGS (dmesg)
@@ -567,64 +511,60 @@ def ProcessKeypress(Key):
     if (Key == "p" or Key == " "):
         PauseOutput = not (PauseOutput)
         if (PauseOutput == True):
-            Window2.ScrollPrint("Pausing output", 2)
-            StatusWindow.WindowPrint(
+            Window2.scroll_print("Pausing output", 2)
+            StatusWindow.window_print(
                 0, 0, "** Output SLOW - press SPACE again to cancel **", 1)
             PrintSleep = PrintSleep * 3
 
         else:
-            Window2.ScrollPrint("Resuming output", 2)
-            StatusWindow.WindowPrint(0, 0, " ", 3)
+            Window2.scroll_print("Resuming output", 2)
+            StatusWindow.window_print(0, 0, " ", 3)
             PrintSleep = OldPrintSleep
             # StatusWindow.ScrollPrint("",2)
 
-    # elif (Key == "i"):
-    #  IPAddress = ShowIPAddress()
-    #  ar.ShowScrollingBanner2(IPAddress,0,225,0,3,0.03)
-
     elif (Key == "i"):
-        Window4.Clear()
-        GetMyNodeInfo(interface)
+        Window4.clear()
+        get_node_info(interface)
 
     elif (Key == "l"):
         Pad1.clear()
-        DisplayLogs(0.01)
+        display_logs(0.01)
 
     elif (Key == "n"):
         Pad1.clear()
-        DisplayNodes(interface)
+        display_nodes(interface)
 
     elif (Key == "q"):
-        FinalCleanup(stdscr)
+        final_cleanup(stdscr)
         exit()
 
     elif (Key == "c"):
-        ClearAllWindows()
+        clear_all_windows()
 
     elif (Key == "r"):
-        Window2.ScrollPrint('** REBOOTING **', 1)
+        Window2.scroll_print('** REBOOTING **', 1)
 
-        FinalCleanup(stdscr)
+        final_cleanup(stdscr)
         os.execl(sys.executable, sys.executable, *sys.argv)
 
     elif (Key == "u"):
-        SendUnsignedMessagePacket(interface)
+        send_unsigned_message(interface)
 
     elif (Key == "s"):
-        SendSignedMessagePacket(interface)
+        send_signed_message(interface)
 
     elif (Key == "t"):
-        TestMesh(interface, 5, 10)
+        test_mesh(interface, 5, 10)
 
     elif (Key == "p"):
-        SendKeysToNode(interface)
+        send_keys(interface)
 
 
-def SendKeysToNode(interface):
+def send_keys(interface):
   node_list = []
   suite = naclSuite()
 
-  Window2.ScrollPrint("SendSignedMessagePacket",2)
+  Window2.scroll_print("SendSignedMessagePacket", 2)
   TheMessage=''
 
 
@@ -634,7 +574,7 @@ def SendKeysToNode(interface):
   SendMessageWindow.TextWindow.border()
   SendMessageWindow.TitleColor = 2
   SendMessageWindow.Title = 'Press CTL-G to send'
-  SendMessageWindow.DisplayTitle()
+  SendMessageWindow.display_title()
 
   SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
 
@@ -664,21 +604,22 @@ def SendKeysToNode(interface):
   suite.write_all_secrets_to_file()
 
 
-  Window4.ScrollPrint(" ",2)
-  Window4.ScrollPrint("==Keys Sent SENT===================================",3)
-  Window4.ScrollPrint("=======================================================",3)
-  Window4.ScrollPrint(" ",2)
+  Window4.scroll_print(" ", 2)
+  Window4.scroll_print("==Keys Sent SENT===================================", 3)
+  Window4.scroll_print("=======================================================", 3)
+  Window4.scroll_print(" ", 2)
 
-  SendMessageWindow.Clear()
+  SendMessageWindow.clear()
   SendMessageWindow.TitleColor = 2
   SendMessageWindow.Title = 'Press U or S to send a message'
-  SendMessageWindow.DisplayTitle()
+  SendMessageWindow.display_title()
 
 
-  Window3.ScrollPrint("To: All - {}".format(TheMessage),2,TimeStamp=True)
+  Window3.scroll_print("To: All - {}".format(TheMessage), 2, TimeStamp=True)
 
-def SendUnsignedMessagePacket(interface, Message=''):
-    Window2.ScrollPrint("SendUnsignedMessagePacket", 2)
+
+def send_unsigned_message(interface, Message=''):
+    Window2.scroll_print("SendUnsignedMessagePacket", 2)
     TheMessage = ''
 
     InputMessageWindow.TextWindow.move(0, 0)
@@ -687,7 +628,7 @@ def SendUnsignedMessagePacket(interface, Message=''):
     SendMessageWindow.TextWindow.border()
     SendMessageWindow.TitleColor = 2
     SendMessageWindow.Title = 'Press CTL-G to send'
-    SendMessageWindow.DisplayTitle()
+    SendMessageWindow.display_title()
 
     SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
 
@@ -712,27 +653,27 @@ def SendUnsignedMessagePacket(interface, Message=''):
     # Send the message to the device
     interface.sendText(TheMessage, wantAck=True)
 
-    Window4.ScrollPrint(" ", 2)
-    Window4.ScrollPrint(
+    Window4.scroll_print(" ", 2)
+    Window4.scroll_print(
         "==Unsigned Packet SENT=================================", 3)
-    Window4.ScrollPrint("To:      All:", 3)
-    Window4.ScrollPrint("From:    BaseStation", 3)
-    Window4.ScrollPrint("Message: {}".format(TheMessage), 3)
-    Window4.ScrollPrint(
+    Window4.scroll_print("To:      All:", 3)
+    Window4.scroll_print("From:    BaseStation", 3)
+    Window4.scroll_print("Message: {}".format(TheMessage), 3)
+    Window4.scroll_print(
         "=======================================================", 3)
-    Window4.ScrollPrint(" ", 2)
+    Window4.scroll_print(" ", 2)
 
-    SendMessageWindow.Clear()
+    SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
     SendMessageWindow.Title = 'Press U or S to send a message'
-    SendMessageWindow.DisplayTitle()
+    SendMessageWindow.display_title()
 
-    Window3.ScrollPrint(
+    Window3.scroll_print(
         "Unsigned message to: All - {}".format(TheMessage), 2, TimeStamp=True)
 
 
-def SendSignedMessagePacket(interface, Message=''):
-    Window2.ScrollPrint("SendSignedMessagePacket", 2)
+def send_signed_message(interface, Message=''):
+    Window2.scroll_print("SendSignedMessagePacket", 2)
     TheMessage = ''
 
     InputMessageWindow.TextWindow.move(0, 0)
@@ -741,7 +682,7 @@ def SendSignedMessagePacket(interface, Message=''):
     SendMessageWindow.TextWindow.border()
     SendMessageWindow.TitleColor = 2
     SendMessageWindow.Title = 'Press CTL-G to send'
-    SendMessageWindow.DisplayTitle()
+    SendMessageWindow.display_title()
 
     SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
 
@@ -766,55 +707,55 @@ def SendSignedMessagePacket(interface, Message=''):
     # Send the message to the device
     interface.sendSignedText(TheMessage, wantAck=True)
 
-    Window4.ScrollPrint(" ", 2)
-    Window4.ScrollPrint(
+    Window4.scroll_print(" ", 2)
+    Window4.scroll_print(
         "==Signed Packet SENT===================================", 3)
-    Window4.ScrollPrint("To:      All:", 3)
-    Window4.ScrollPrint("From:    BaseStation", 3)
-    Window4.ScrollPrint("Message: {}".format(TheMessage), 3)
-    Window4.ScrollPrint(
+    Window4.scroll_print("To:      All:", 3)
+    Window4.scroll_print("From:    BaseStation", 3)
+    Window4.scroll_print("Message: {}".format(TheMessage), 3)
+    Window4.scroll_print(
         "=======================================================", 3)
-    Window4.ScrollPrint(" ", 2)
+    Window4.scroll_print(" ", 2)
 
-    SendMessageWindow.Clear()
+    SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
     SendMessageWindow.Title = 'Press U or S to send a message'
-    SendMessageWindow.DisplayTitle()
+    SendMessageWindow.display_title()
 
-    Window3.ScrollPrint(
+    Window3.scroll_print(
         "Signed message to: All - {}".format(TheMessage), 2, TimeStamp=True)
 
 
-def GoToSleep(TimeToSleep):
-    Window2.ScrollPrint("GoToSleep({})".format(TimeToSleep), 2, TimeStamp=True)
+def go_to_sleep(TimeToSleep):
+    Window2.scroll_print("GoToSleep({})".format(TimeToSleep), 2, TimeStamp=True)
     for i in range(0, (TimeToSleep * 10)):
         # Check for keyboard input      --
-        PollKeyboard()
+        poll_keyboard()
         time.sleep(0.1)
 
 
-def ClearAllWindows():
-    Window1.Clear()
-    Window2.Clear()
-    Window3.Clear()
-    Window4.Clear()
-    Window5.Clear()
-    Window2.ScrollPrint("**Clearing screens**", 2)
-    UpdateStatusWindow()
+def clear_all_windows():
+    Window1.clear()
+    Window2.clear()
+    Window3.clear()
+    Window4.clear()
+    Window5.clear()
+    Window2.scroll_print("**Clearing screens**", 2)
+    update_status_window()
 
 
-def UpdateStatusWindow(NewDeviceStatus='',
-                       NewDeviceName='',
-                       NewDevicePort='',
-                       NewHardwareModel='',
-                       NewMacAddress='',
-                       NewDeviceID='',
-                       NewBatteryLevel=-1,
-                       NewLastPacketType='',
-                       NewLat=0,
-                       NewLon=0,
-                       Color=2
-                       ):
+def update_status_window(NewDeviceStatus='',
+                         NewDeviceName='',
+                         NewDevicePort='',
+                         NewHardwareModel='',
+                         NewMacAddress='',
+                         NewDeviceID='',
+                         NewBatteryLevel=-1,
+                         NewLastPacketType='',
+                         NewLat=0,
+                         NewLon=0,
+                         Color=2
+                         ):
     # Window2.ScrollPrint("UpdateStatusWindow",2,TimeStamp=True)
 
     global DeviceStatus
@@ -873,106 +814,94 @@ def UpdateStatusWindow(NewDeviceStatus='',
         BaseLon = NewLon
 
     # DeviceName
-    Window1.WindowPrint(y1, x1, "UserName:   ", 2)
-    Window1.WindowPrint(y1, x1+12, DeviceName, Color)
+    Window1.window_print(y1, x1, "UserName:   ", 2)
+    Window1.window_print(y1, x1 + 12, DeviceName, Color)
 
     # DeviceStatus
-    Window1.WindowPrint(y2, x2, "Model:      " + HardwareModel, 2)
-    Window1.WindowPrint(y2, x2+12, HardwareModel, Color)
+    Window1.window_print(y2, x2, "Model:      " + HardwareModel, 2)
+    Window1.window_print(y2, x2 + 12, HardwareModel, Color)
 
     # DeviceStatus
-    Window1.WindowPrint(y3, x3, "Status:     " + DeviceStatus, 2)
-    Window1.WindowPrint(y3, x3+12, DeviceStatus, Color)
+    Window1.window_print(y3, x3, "Status:     " + DeviceStatus, 2)
+    Window1.window_print(y3, x3 + 12, DeviceStatus, Color)
 
     # MacAddress
-    Window1.WindowPrint(y4, x4, "MacAddress: ", 2)
-    Window1.WindowPrint(y4, x4+12, MacAddress, Color)
+    Window1.window_print(y4, x4, "MacAddress: ", 2)
+    Window1.window_print(y4, x4 + 12, MacAddress, Color)
 
     # DeviceID
-    Window1.WindowPrint(y5, x5, "DeviceID:   ", 2)
-    Window1.WindowPrint(y5, x5+12, DeviceID, Color)
+    Window1.window_print(y5, x5, "DeviceID:   ", 2)
+    Window1.window_print(y5, x5 + 12, DeviceID, Color)
 
     # PacketsReceived
-    Window1.WindowPrint(y6, x6, "Packets Decoded: ", 2)
-    Window1.WindowPrint(y6, x6+17, "{}".format(PacketsReceived), Color)
+    Window1.window_print(y6, x6, "Packets Decoded: ", 2)
+    Window1.window_print(y6, x6 + 17, "{}".format(PacketsReceived), Color)
 
     # LastPacketType
-    Window1.WindowPrint(y7, x7, "LastPacketType:  ", 2)
-    Window1.WindowPrint(y7, x7+17, LastPacketType, Color)
+    Window1.window_print(y7, x7, "LastPacketType:  ", 2)
+    Window1.window_print(y7, x7 + 17, LastPacketType, Color)
 
     # BatteryLevel
-    Window1.WindowPrint(y8, x8, "BatteryLevel:    ", 2)
-    Window1.WindowPrint(y8, x8+17, "{}".format(BatteryLevel), Color)
+    Window1.window_print(y8, x8, "BatteryLevel:    ", 2)
+    Window1.window_print(y8, x8 + 17, "{}".format(BatteryLevel), Color)
 
     # Base LAT
-    Window1.WindowPrint(y9, x9, "Base LAT:    ", 2)
-    Window1.WindowPrint(y9, x9+17, "{}".format(BaseLat), Color)
+    Window1.window_print(y9, x9, "Base LAT:    ", 2)
+    Window1.window_print(y9, x9 + 17, "{}".format(BaseLat), Color)
 
     # Base LON
-    Window1.WindowPrint(y10, x10, "Base LON:    ", 2)
-    Window1.WindowPrint(y10, x10+17, "{}".format(BaseLon), Color)
+    Window1.window_print(y10, x10, "Base LON:    ", 2)
+    Window1.window_print(y10, x10 + 17, "{}".format(BaseLon), Color)
 
 
-def DisplayHelpInfo():
-  HelpWindow.ScrollPrint("C - CLEAR Screen",7)
-  HelpWindow.ScrollPrint("I - Request node INFO",7)
-  HelpWindow.ScrollPrint("L - Show LOGS",7)
-  HelpWindow.ScrollPrint("N - Show all NODES",7)
-  HelpWindow.ScrollPrint("Q - QUIT program",7)
-  HelpWindow.ScrollPrint("R - RESTART MeshWatch",7)
-  HelpWindow.ScrollPrint("U - SEND unsigned message",7)
-  HelpWindow.ScrollPrint("S - SEND signed message",7)
-  HelpWindow.ScrollPrint("T - TEST mesh network",7)
-  HelpWindow.ScrollPrint("P - Assign Keys To Device",7)
-  HelpWindow.ScrollPrint("SPACEBAR - Slow/Fast output",7)
+def display_help_info():
+  HelpWindow.scroll_print("C - CLEAR Screen", 7)
+  HelpWindow.scroll_print("I - Request node INFO", 7)
+  HelpWindow.scroll_print("L - Show LOGS", 7)
+  HelpWindow.scroll_print("N - Show all NODES", 7)
+  HelpWindow.scroll_print("Q - QUIT program", 7)
+  HelpWindow.scroll_print("R - RESTART MeshWatch", 7)
+  HelpWindow.scroll_print("U - SEND unsigned message", 7)
+  HelpWindow.scroll_print("S - SEND signed message", 7)
+  HelpWindow.scroll_print("T - TEST mesh network", 7)
+  HelpWindow.scroll_print("P - Assign Keys To Device", 7)
+  HelpWindow.scroll_print("SPACEBAR - Slow/Fast output", 7)
 
 
+def get_node_info(interface):
+    # Get information about my own node
 
-def GetMyNodeInfo(interface):
-    Distance = 0
-    DeviceName = ''
-    BaseLat = 0
-    BaseLon = 0
-
-    Window4.ScrollPrint(" ", 2)
-    Window4.ScrollPrint("==MyNodeInfo===================================", 3)
+    Window4.scroll_print(" ", 2)
+    Window4.scroll_print("==MyNodeInfo===================================", 3)
     TheNode = interface.getMyNodeInfo()
-    DecodePacket('MYNODE', TheNode, '', '', PrintSleep=PrintSleep)
-    Window4.ScrollPrint("===============================================", 3)
-    Window4.ScrollPrint(" ", 2)
+    decode_packet('MYNODE', TheNode, '', '', PrintSleep=PrintSleep)
+    Window4.scroll_print("===============================================", 3)
+    Window4.scroll_print(" ", 2)
 
     if 'latitude' in TheNode['position'] and 'longitude' in TheNode['position']:
         BaseLat = TheNode['position']['latitude']
         BaseLon = TheNode['position']['longitude']
-        UpdateStatusWindow(NewLon=BaseLon, NewLat=BaseLat, Color=2)
+        update_status_window(NewLon=BaseLon, NewLat=BaseLat, Color=2)
 
     if 'longName' in TheNode['user']:
-        UpdateStatusWindow(NewDeviceName=TheNode['user']['longName'], Color=2)
+        update_status_window(NewDeviceName=TheNode['user']['longName'], Color=2)
 
     if 'hwModel' in TheNode['user']:
-        UpdateStatusWindow(
+        update_status_window(
             NewHardwareModel=TheNode['user']['hwModel'], Color=2)
 
     if 'macaddr' in TheNode['user']:
-        UpdateStatusWindow(NewMacAddress=TheNode['user']['macaddr'], Color=2)
+        update_status_window(NewMacAddress=TheNode['user']['macaddr'], Color=2)
 
     if 'id' in TheNode['user']:
-        UpdateStatusWindow(NewDeviceID=TheNode['user']['id'], Color=2)
+        update_status_window(NewDeviceID=TheNode['user']['id'], Color=2)
 
     if 'batteryLevel' in TheNode['position']:
-        UpdateStatusWindow(
+        update_status_window(
             NewBatteryLevel=TheNode['position']['batteryLevel'], Color=2)
 
 
-def deg2num(lat_deg, lon_deg, zoom):
-    lat_rad = math.radians(lat_deg)
-    n = 2.0 ** zoom
-    xtile = int((lon_deg + 180.0) / 360.0 * n)
-    ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
-    return (xtile, ytile)
-
-
-def DisplayNodes(interface):
+def display_nodes(interface):
     Pad1.clear()
     Pad1.pad_print("--NODES IN MESH------------", 3)
 
@@ -1019,7 +948,7 @@ def DisplayNodes(interface):
     except Exception as ErrorMessage:
         TraceMessage = traceback.format_exc()
         AdditionalInfo = "Processing node info"
-        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
+        error_handler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
     Pad1.pad_print("---------------------------", 3)
 
@@ -1062,12 +991,12 @@ def tail(f, n):
     return lines[-n:]
 
 
-def DisplayLogs(ScrollSleep):
+def display_logs(ScrollSleep):
     global PriorityOutput
 
     # we want to stop all other output to prevent text being written to other windows
     PriorityOutput = True
-    Window2.ScrollPrint("PriorityOutput: activated")
+    Window2.scroll_print("PriorityOutput: activated")
 
     try:
         with open("/var/log/kern.log") as f:
@@ -1077,16 +1006,16 @@ def DisplayLogs(ScrollSleep):
             for line in f:
                 Pad1.pad_print(line, 3)
                 time.sleep(ScrollSleep)
-                PollKeyboard()
+                poll_keyboard()
     except IOError:
         Pad1.pad_print("Could not open /var/log/kern.log.", 3)
 
     PriorityOutput = False
-    Window2.ScrollPrint("PriorityOutput: deactivated")
+    Window2.scroll_print("PriorityOutput: deactivated")
 
 
-def TestMesh(interface, MessageCount=10, Sleep=10):
-    Window2.ScrollPrint("TestMesh", 2)
+def test_mesh(interface, MessageCount=10, Sleep=10):
+    Window2.scroll_print("TestMesh", 2)
 
     for i in range(1, MessageCount+1):
 
@@ -1098,25 +1027,25 @@ def TestMesh(interface, MessageCount=10, Sleep=10):
         # Send the message to the device
         interface.sendText(TheMessage, wantAck=True)
 
-        Window4.ScrollPrint(" ", 2)
-        Window4.ScrollPrint(
+        Window4.scroll_print(" ", 2)
+        Window4.scroll_print(
             "==Packet SENT==========================================", 3)
-        Window4.ScrollPrint("To:      All:", 3)
-        Window4.ScrollPrint("From:    BaseStation", 3)
-        Window4.ScrollPrint("Message: {}".format(TheMessage), 3)
-        Window4.ScrollPrint(
+        Window4.scroll_print("To:      All:", 3)
+        Window4.scroll_print("From:    BaseStation", 3)
+        Window4.scroll_print("Message: {}".format(TheMessage), 3)
+        Window4.scroll_print(
             "=======================================================", 3)
-        Window4.ScrollPrint(" ", 2)
+        Window4.scroll_print(" ", 2)
 
-        SendMessageWindow.Clear()
+        SendMessageWindow.clear()
         SendMessageWindow.TitleColor = 2
         SendMessageWindow.Title = 'Press U or S to send a message'
-        SendMessageWindow.DisplayTitle()
+        SendMessageWindow.display_title()
 
-        Window3.ScrollPrint(
+        Window3.scroll_print(
             "To: All - {}".format(TheMessage), 2, TimeStamp=True)
 
-        GoToSleep(Sleep)
+        go_to_sleep(Sleep)
 
 
 # ------------------------------------------------------------------------------
@@ -1178,67 +1107,67 @@ def main(stdscr):
             TraceMessage = traceback.format_stack()[0]
             AdditionalInfo = "57 lines and 190 columns required. Found {} lines and {} columns.".format(
                 curses.LINES, curses.COLS)
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
+            error_handler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
-        CreateTextWindows()
-        Window4.ScrollPrint("System initiated", 2)
-        Window2.ScrollPrint("Priorityoutput: {}".format(PriorityOutput), 1)
+        create_text_windows()
+        Window4.scroll_print("System initiated", 2)
+        Window2.scroll_print("Priorityoutput: {}".format(PriorityOutput), 1)
 
         # Instanciate a meshtastic object
         # By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
         if (args.host):
-            Window4.ScrollPrint(
+            Window4.scroll_print(
                 "Connecting to device on host {}".format(args.host), 2)
             interface = meshtastic.tcp_interface.TCPInterface(args.host)
         elif (args.port):
-            Window4.ScrollPrint(
+            Window4.scroll_print(
                 "Connecting to device at port {}".format(args.port), 2)
             interface = meshtastic.serial_interface.SerialInterface(args.port)
         else:
-            Window4.ScrollPrint("Finding Meshtastic device", 2)
+            Window4.scroll_print("Finding Meshtastic device", 2)
             interface = meshtastic.serial_interface.SerialInterface()
 
         # subscribe to connection and receive channels
-        Window4.ScrollPrint("Subscribe to publications", 2)
-        pub.subscribe(onConnectionEstablished,
+        Window4.scroll_print("Subscribe to publications", 2)
+        pub.subscribe(on_connection_established,
                       "meshtastic.connection.established")
-        pub.subscribe(onConnectionLost,        "meshtastic.connection.lost")
+        pub.subscribe(on_connection_lost, "meshtastic.connection.lost")
 
         # does not seem to work
         #pub.subscribe(onNodeUpdated,           "meshtastic.node.updated")
         time.sleep(2)
         # Get node info for connected device
-        Window4.ScrollPrint("Requesting device info", 2)
-        GetMyNodeInfo(interface)
+        Window4.scroll_print("Requesting device info", 2)
+        get_node_info(interface)
 
         # Check for message to be sent (command line option)
         if (SendMessage):
             interface.sendText(TheMessage, wantAck=True)
 
         # Go into listening mode
-        Window4.ScrollPrint("Listening for: {} seconds".format(TimeToSleep), 2)
-        Window4.ScrollPrint("Subscribing to interface channels...", 2)
-        pub.subscribe(onReceive, "meshtastic.receive")
+        Window4.scroll_print("Listening for: {} seconds".format(TimeToSleep), 2)
+        Window4.scroll_print("Subscribing to interface channels...", 2)
+        pub.subscribe(on_receive, "meshtastic.receive")
 
         while (1 == 1):
-            GoToSleep(5)
+            go_to_sleep(5)
 
         interface.close()
-        Window4.ScrollPrint("--End of Line------------", 2)
-        Window4.ScrollPrint("", 2)
+        Window4.scroll_print("--End of Line------------", 2)
+        Window4.scroll_print("", 2)
 
     except Exception as ErrorMessage:
         time.sleep(2)
         TraceMessage = traceback.format_exc()
         AdditionalInfo = "Main function "
-        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
+        error_handler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
 # --------------------------------------
 # Main (pre-amble                    --
 # --------------------------------------
 
     # if SIGINT or CTL-C detected, run SIGINT_handler to exit gracefully
-    signal(SIGINT, SIGINT_handler)
+    signal(SIGINT, sigint_handler)
 
 
 # only execute if we are in main
@@ -1258,10 +1187,10 @@ if __name__ == '__main__':
         stdscr.keypad(1)
         main(stdscr)                    # Enter the main loop
         # Set everything back to normal
-        FinalCleanup(stdscr)
+        final_cleanup(stdscr)
 
     except Exception as ErrorMessage:
         # In event of error, restore terminal to sane state.
         TraceMessage = traceback.format_exc()
         AdditionalInfo = "Main pre-amble"
-        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
+        error_handler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
