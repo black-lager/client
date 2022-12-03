@@ -4,6 +4,7 @@
 # Send and receive signed and unsigned messages from a Mesthtastic device.
 # ------------------------------------------------------------------------------
 
+from utils import *
 import meshtastic
 import meshtastic.serial_interface
 import meshtastic.tcp_interface
@@ -257,7 +258,7 @@ class TextWindow(object):
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "PrintLine: {}".format(PrintLine)
 
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
+            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
     def WindowPrint(self, y, x, PrintLine, Color=2):
         # print at a specific coordinate within the window
@@ -275,11 +276,6 @@ class TextWindow(object):
         self.TextWindow.attroff(curses.color_pair(Color))
 
         self.TextWindow.refresh()
-
-        # except Exception as ErrorMessage:
-        #  TraceMessage = traceback.format_exc()
-        #  AdditionalInfo = "PrintLine: {}".format(PrintLine)
-        #  ErrorHandler(ErrorMessage,TraceMessage,AdditionalInfo)
 
     def DisplayTitle(self):
         # display the window title
@@ -304,7 +300,7 @@ class TextWindow(object):
         except Exception as ErrorMessage:
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "Title: " + Title
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
+            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
     def Clear(self):
         self.TextWindow.erase()
@@ -365,7 +361,7 @@ class TextPad(object):
             time.sleep(2)
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "PrintLine: " + PrintLine
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
+            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
     def Clear(self):
         try:
@@ -376,42 +372,7 @@ class TextPad(object):
         except Exception as ErrorMessage:
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "erasing textpad"
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
-
-
-def ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo):
-    # Window2.ScrollPrint('ErrorHandler',10,TimeStamp=True)
-    #Window4.ScrollPrint('** Just a moment...**',8)
-    CallingFunction = inspect.stack()[1][3]
-    FinalCleanup(stdscr)
-    print("")
-    print("")
-    print("--------------------------------------------------------------")
-    print("ERROR - Function (", CallingFunction, ") has encountered an error. ")
-    print(ErrorMessage)
-    print("")
-    print("")
-    print("TRACE")
-    print(TraceMessage)
-    print("")
-    print("")
-    if (AdditionalInfo != ""):
-        print("Additonal info:", AdditionalInfo)
-        print("")
-        print("")
-    print("--------------------------------------------------------------")
-    print("")
-    print("")
-    time.sleep(1)
-    sys.exit('Meshwatch exiting...')
-
-
-def FinalCleanup(stdscr):
-    stdscr.keypad(0)
-    curses.echo()
-    curses.nocbreak()
-    curses.curs_set(1)
-    curses.endwin()
+            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
 
 # --------------------------------------
@@ -607,7 +568,7 @@ def CreateTextWindows():
     except Exception as ErrorMessage:
         TraceMessage = traceback.format_exc()
         AdditionalInfo = "Creating text windows"
-        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
+        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
 
 # --------------------------------------
@@ -780,7 +741,7 @@ def onConnectionEstablished(interface, topic=pub.AUTO_TOPIC):
         except Exception as ErrorMessage:
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "Sending text message ({})".format(Message)
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
+            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
 
 # called when we (re)connect to the radio
@@ -1321,7 +1282,7 @@ def DisplayNodes(interface):
     except Exception as ErrorMessage:
         TraceMessage = traceback.format_exc()
         AdditionalInfo = "Processing node info"
-        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
+        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
     Pad1.PadPrint("---------------------------", 3)
 
@@ -1480,7 +1441,7 @@ def main(stdscr):
             TraceMessage = traceback.format_stack()[0]
             AdditionalInfo = "57 lines and 190 columns required. Found {} lines and {} columns.".format(
                 curses.LINES, curses.COLS)
-            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
+            ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
         CreateTextWindows()
         Window4.ScrollPrint("System initiated", 2)
@@ -1533,7 +1494,7 @@ def main(stdscr):
         time.sleep(2)
         TraceMessage = traceback.format_exc()
         AdditionalInfo = "Main function "
-        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
+        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
 # --------------------------------------
 # Main (pre-amble                    --
@@ -1566,4 +1527,4 @@ if __name__ == '__main__':
         # In event of error, restore terminal to sane state.
         TraceMessage = traceback.format_exc()
         AdditionalInfo = "Main pre-amble"
-        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo)
+        ErrorHandler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
