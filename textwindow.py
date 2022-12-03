@@ -63,8 +63,6 @@ class TextWindow(object):
 
         # adjust strings
         # Get a part of the big string that will fit in the window
-        PrintableString = ''
-        RemainingString = ''
         PrintableString = PrintLine[0:self.DisplayColumns]
         RemainingString = PrintLine[self.DisplayColumns+1:]
 
@@ -90,7 +88,7 @@ class TextWindow(object):
                 self.TextWindow.attroff(
                     curses.color_pair(self.PreviousLineColor))
 
-                if (BoldLine == True):
+                if BoldLine:
                     # A_NORMAL        Normal display (no highlight)
                     # A_STANDOUT      Best highlighting mode of the terminal
                     # A_UNDERLINE     Underlining
@@ -161,17 +159,16 @@ class TextWindow(object):
     def display_title(self):
         # display the window title
 
-        Color = 0
-        Title = ''
+        title = ''
 
         try:
             # expand tabs to X spaces, pad the string with space then truncate
-            Title = self.Title[0:self.DisplayColumns-3]
+            title = self.Title[0:self.DisplayColumns-3]
 
             self.TextWindow.attron(curses.color_pair(self.TitleColor))
             if (self.rows > 2):
                 # print new line in bold
-                self.TextWindow.addstr(0, 2, Title)
+                self.TextWindow.addstr(0, 2, title)
             else:
                 print("ERROR - You cannot display title on a window smaller than 3 rows")
 
@@ -180,7 +177,7 @@ class TextWindow(object):
 
         except Exception as ErrorMessage:
             TraceMessage = traceback.format_exc()
-            AdditionalInfo = "Title: " + Title
+            AdditionalInfo = "Title: " + title
             error_handler(ErrorMessage, TraceMessage, AdditionalInfo, self.stdscr)
 
     def clear(self):
@@ -190,8 +187,7 @@ class TextWindow(object):
         self.TextWindow.attroff(curses.color_pair(self.BorderColor))
         self.display_title()
 
-        # self.TextWindow.refresh()
-        if (self.ShowBorder == 'Y'):
+        if self.ShowBorder == 'Y':
             self.CurrentRow = 1
             self.StartColumn = 1
         else:

@@ -6,14 +6,12 @@ import curses
 
 
 def error_handler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr):
-    # Window2.ScrollPrint('ErrorHandler',10,TimeStamp=True)
-    #Window4.ScrollPrint('** Just a moment...**',8)
-    CallingFunction = inspect.stack()[1][3]
+    calling_function = inspect.stack()[1][3]
     final_cleanup(stdscr)
     print("")
     print("")
     print("--------------------------------------------------------------")
-    print("ERROR - Function (", CallingFunction, ") has encountered an error. ")
+    print("ERROR - Function (", calling_function, ") has encountered an error. ")
     print(ErrorMessage)
     print("")
     print("")

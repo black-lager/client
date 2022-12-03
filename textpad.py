@@ -54,9 +54,7 @@ class TextPad(object):
     def clear(self):
         try:
             self.TextPad.erase()
-            #self.TextPad.noutrefresh(0,0,self.y1,self.x1,self.y1 + self.rows,self.x1 + self.columns)
-            self.TextPad.refresh(0, 0, self.y1, self.x1,
-                                 self.y1 + self.rows, self.x1 + self.columns)
+            self.TextPad.refresh(0, 0, self.y1, self.x1, self.y1 + self.rows, self.x1 + self.columns)
         except Exception as ErrorMessage:
             TraceMessage = traceback.format_exc()
             AdditionalInfo = "erasing textpad"

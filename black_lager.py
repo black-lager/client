@@ -484,7 +484,19 @@ def poll_keyboard():
     return return_char
 
 
-def process_keypress(Key):
+def process_keypress(key):
+    # c = clear screen
+    # i = get node info
+    # l = show system LOGS (dmesg)
+    # n = show all nodes in mesh
+    # p = pause
+    # q = quit
+    # r = reboot
+    # u = Send unsigned message
+    # s = Send signed message
+    # t = test messages
+    # k = send keys
+
     global stdscr
     global StatusWindow
     global Window2
@@ -495,68 +507,55 @@ def process_keypress(Key):
     global PrintSleep
     global OldPrintSleep
 
-    OutputLine = "KEYPRESS: [" + str(Key) + "]"
-    Window2.scroll_print(OutputLine, 5)
-    # c = clear screen
-    # i = get node info
-    # l = show system LOGS (dmesg)
-    # n = show all nodes in mesh
-    # p = pause
-    # q = quit
-    # r = reboot
-    # u = Send unsigned message
-    # s = Send signed message
-    # T = test messages
+    output_line = "KEYPRESS: [" + str(key) + "]"
+    Window2.scroll_print(output_line, 5)
 
-    if (Key == "p" or Key == " "):
-        PauseOutput = not (PauseOutput)
-        if (PauseOutput == True):
+    if key == "p" or key == " ":
+        PauseOutput = not PauseOutput
+        if PauseOutput:
             Window2.scroll_print("Pausing output", 2)
-            StatusWindow.window_print(
-                0, 0, "** Output SLOW - press SPACE again to cancel **", 1)
+            StatusWindow.window_print(0, 0, "** Output SLOW - press SPACE again to cancel **", 1)
             PrintSleep = PrintSleep * 3
-
         else:
             Window2.scroll_print("Resuming output", 2)
             StatusWindow.window_print(0, 0, " ", 3)
             PrintSleep = OldPrintSleep
-            # StatusWindow.ScrollPrint("",2)
 
-    elif (Key == "i"):
+    elif key == "i":
         Window4.clear()
         get_node_info(interface)
 
-    elif (Key == "l"):
+    elif key == "l":
         Pad1.clear()
         display_logs(0.01)
 
-    elif (Key == "n"):
+    elif key == "n":
         Pad1.clear()
         display_nodes(interface)
 
-    elif (Key == "q"):
+    elif key == "q":
         final_cleanup(stdscr)
         exit()
 
-    elif (Key == "c"):
+    elif key == "c":
         clear_all_windows()
 
-    elif (Key == "r"):
+    elif key == "r":
         Window2.scroll_print('** REBOOTING **', 1)
 
         final_cleanup(stdscr)
         os.execl(sys.executable, sys.executable, *sys.argv)
 
-    elif (Key == "u"):
+    elif key == "u":
         send_unsigned_message(interface)
 
-    elif (Key == "s"):
+    elif key == "s":
         send_signed_message(interface)
 
-    elif (Key == "t"):
+    elif key == "t":
         test_mesh(interface, 5, 10)
 
-    elif (Key == "p"):
+    elif key == "k":
         send_keys(interface)
 
 
@@ -855,17 +854,17 @@ def update_status_window(NewDeviceStatus='',
 
 
 def display_help_info():
-  HelpWindow.scroll_print("C - CLEAR Screen", 7)
-  HelpWindow.scroll_print("I - Request node INFO", 7)
-  HelpWindow.scroll_print("L - Show LOGS", 7)
-  HelpWindow.scroll_print("N - Show all NODES", 7)
-  HelpWindow.scroll_print("Q - QUIT program", 7)
-  HelpWindow.scroll_print("R - RESTART MeshWatch", 7)
-  HelpWindow.scroll_print("U - SEND unsigned message", 7)
-  HelpWindow.scroll_print("S - SEND signed message", 7)
-  HelpWindow.scroll_print("T - TEST mesh network", 7)
-  HelpWindow.scroll_print("P - Assign Keys To Device", 7)
-  HelpWindow.scroll_print("SPACEBAR - Slow/Fast output", 7)
+    HelpWindow.scroll_print("C - CLEAR Screen", 7)
+    HelpWindow.scroll_print("I - Request node INFO", 7)
+    HelpWindow.scroll_print("L - Show LOGS", 7)
+    HelpWindow.scroll_print("N - Show all NODES", 7)
+    HelpWindow.scroll_print("Q - QUIT program", 7)
+    HelpWindow.scroll_print("R - RESTART MeshWatch", 7)
+    HelpWindow.scroll_print("U - SEND unsigned message", 7)
+    HelpWindow.scroll_print("S - SEND signed message", 7)
+    HelpWindow.scroll_print("T - TEST mesh network", 7)
+    HelpWindow.scroll_print("K - Assign Keys To Device", 7)
+    HelpWindow.scroll_print("SPACEBAR - Slow/Fast output", 7)
 
 
 def get_node_info(interface):
