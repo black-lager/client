@@ -1,24 +1,25 @@
-import persona_pb2
-from google.protobuf import text_format
+from black_lager import persona_pb2
 import os
 
 
 class Persona:
 
-    """ The Persona conatins a key pair and it's relationships to other keys.
-        'Owned' personas will have one or more secret keys.
+    """ The Persona contains a key pair and it's relationships to other keys.
+        'Owned' personas will have a secret key.
     """
-    
+
     def __init__(self, local_name, mac_address):
         """ Each new Persona represents a single 'owned' key pair. The Persona
             serves as a handle for all cryptographic secrets and state supported
             by the cipher suite.
         """
-        self.person = persona_pb2.persona() # wrapping the protobuf class to hold values
+
+        # wrapping the protobuf class to hold values
+        self.person = persona_pb2.Persona()
         self.person.local_name = local_name
         self.person.mac_address = mac_address
         self.peers = {}   # peers indexed by public key
-    
+
     def save_keys(self, pkey, skey):
         """ Save a persona's public and private keys its protobuf
         """
@@ -30,7 +31,7 @@ class Persona:
     def write_all_secrets_to_file(self):
         path_to_script = os.path.dirname(os.path.abspath(__file__))
         fileName = os.path.join(path_to_script, "config.txt")
-        f = open(fileName,'ab')
+        f = open(fileName, 'ab')
         #f.write(text_proto)
         f.write(self.person.SerializeToString())
         f.close()
@@ -40,10 +41,8 @@ class Persona:
 
     def get_skey(self):
         return self.person.private_key
-    
 
 
 mike = Persona("12220 Dalian","Ahabi")
-mike.write_all_secrets_to_file() 
+mike.write_all_secrets_to_file()
 # print(mike.person.SerializeToString())
-
