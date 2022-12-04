@@ -30,7 +30,7 @@ from signal import signal, SIGINT
 from sys import exit
 
 # cipher suite
-from cipher_suite.nacl_suite import naclSuite
+from nacl_suite import NaclSuite
 
 #
 # Variable Declaration
@@ -557,7 +557,7 @@ def process_keypress(key):
 
 def send_keys(interface):
     node_list = []
-    suite = naclSuite()
+    suite = NaclSuite()
 
     Window2.scroll_print("SendSignedMessagePacket", 2)
     TheMessage=''
