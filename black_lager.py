@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-# ------------------------------------------------------------------------------
-# Send and receive signed and unsigned messages from a Meshtastic device.
-# ------------------------------------------------------------------------------
-
 from textwindow import TextWindow
 from textpad import TextPad
 from utils import *
@@ -40,8 +36,8 @@ from cipher_suite.nacl_suite import naclSuite
 # Variable Declaration
 #
 
-NAME = 'MeshWatch'
-DESCRIPTION = "Send and recieve messages to a MeshTastic device"
+NAME = "BlackLager"
+DESCRIPTION = "Send and receive signed and unsigned messages from a Meshtastic device."
 DEBUG = False
 
 parser = argparse.ArgumentParser(description=DESCRIPTION)
@@ -190,7 +186,7 @@ def create_text_windows():
     Pad1y2 = Window5y2 - 1
 
     # Help Window
-    HelpWindowHeight = 11
+    HelpWindowHeight = 13
     HelpWindowLength = 35
     HelpWindowx1 = Window5x2 + 1
     HelpWindowy1 = Window5y1
@@ -258,7 +254,7 @@ def create_text_windows():
                        Pad1y1, Pad1x1, Pad1y2, Pad1x2, 'N', 5, stdscr)
 
         # each title needs to be initialized or you get errors in scrollprint
-        TitleWindow.Title,   TitleWindow.TitleColor = "--MeshWatch 1.0--", 2
+        TitleWindow.Title,   TitleWindow.TitleColor = "--Black Lager--", 2
         StatusWindow.Title,  StatusWindow.TitleColor = "", 2
         StatusWindow2.Title, StatusWindow2.TitleColor = "", 2
         Window1.Title, Window1.TitleColor = "Device Info", 2
