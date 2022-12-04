@@ -556,61 +556,60 @@ def process_keypress(key):
 
 
 def send_keys(interface):
-  node_list = []
-  suite = naclSuite()
+    node_list = []
+    suite = naclSuite()
 
-  Window2.scroll_print("SendSignedMessagePacket", 2)
-  TheMessage=''
-
-
-  InputMessageWindow.TextWindow.move(0,0)
-  #Change color temporarily
-  SendMessageWindow.TextWindow.attron(curses.color_pair(2))
-  SendMessageWindow.TextWindow.border()
-  SendMessageWindow.TitleColor = 2
-  SendMessageWindow.Title = 'Press CTL-G to send'
-  SendMessageWindow.display_title()
-
-  SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
-
-  SendMessageWindow.TextWindow.refresh()
-
-  #Show cursor
-
-  curses.curs_set(True)
-
-  InputMessageWindow.TextWindow.erase()
-  InputMessageBox.edit()
-  curses.curs_set(False)
-
-  for node in interface.nodes.values():
-    new_tuple = (node['user']['longName'], node['user']['macaddr'], node['num'])
-    node_list.append(new_tuple)
+    Window2.scroll_print("SendSignedMessagePacket", 2)
+    TheMessage=''
 
 
-  for node in node_list:
-      local_name = node[0]
-      mac_addr = node[1]
-      node_num = node[2]
-      public_key, private_key = suite.generate_key_pairs(local_name)
-      suite.add_person_to_book(local_name,mac_addr,node_num, bytes(public_key), bytes(private_key))
-      interface.sendData(public_key, wantAck=True)
-      interface.sendData(private_key, wantAck=True)
-  suite.write_all_secrets_to_file()
+    InputMessageWindow.TextWindow.move(0,0)
+    #Change color temporarily
+    SendMessageWindow.TextWindow.attron(curses.color_pair(2))
+    SendMessageWindow.TextWindow.border()
+    SendMessageWindow.TitleColor = 2
+    SendMessageWindow.Title = 'Press CTL-G to send'
+    SendMessageWindow.display_title()
+
+    SendMessageWindow.TextWindow.attroff(curses.color_pair(2))
+
+    SendMessageWindow.TextWindow.refresh()
+
+    #Show cursor
+
+    curses.curs_set(True)
+
+    InputMessageWindow.TextWindow.erase()
+    InputMessageBox.edit()
+    curses.curs_set(False)
+
+    for node in interface.nodes.values():
+        new_tuple = (node['user']['longName'], node['user']['macaddr'], node['num'])
+        node_list.append(new_tuple)
 
 
-  Window4.scroll_print(" ", 2)
-  Window4.scroll_print("==Keys Sent SENT===================================", 3)
-  Window4.scroll_print("=======================================================", 3)
-  Window4.scroll_print(" ", 2)
+    for node in node_list:
+        local_name = node[0]
+        mac_addr = node[1]
+        node_num = node[2]
+        public_key, private_key = suite.generate_key_pairs(local_name)
+        suite.add_person_to_book(local_name,mac_addr,node_num, bytes(public_key), bytes(private_key))
+        interface.sendData(public_key, wantAck=True)
+        interface.sendData(private_key, wantAck=True)
 
-  SendMessageWindow.clear()
-  SendMessageWindow.TitleColor = 2
-  SendMessageWindow.Title = 'Press U or S to send a message'
-  SendMessageWindow.display_title()
+    suite.write_all_secrets_to_file()
 
+    Window4.scroll_print(" ", 2)
+    Window4.scroll_print("==Keys Sent SENT===================================", 3)
+    Window4.scroll_print("=======================================================", 3)
+    Window4.scroll_print(" ", 2)
 
-  Window3.scroll_print("To: All - {}".format(TheMessage), 2, TimeStamp=True)
+    SendMessageWindow.clear()
+    SendMessageWindow.TitleColor = 2
+    SendMessageWindow.Title = 'Press U or S to send a message'
+    SendMessageWindow.display_title()
+
+    Window3.scroll_print("To: All - {}".format(TheMessage), 2, TimeStamp=True)
 
 
 def send_unsigned_message(interface, Message=''):
@@ -630,10 +629,9 @@ def send_unsigned_message(interface, Message=''):
     SendMessageWindow.TextWindow.refresh()
 
     # Show cursor
-
     curses.curs_set(True)
-    # Let the user edit until Ctrl-G is struck.
 
+    # Let the user edit until Ctrl-G is struck.
     InputMessageWindow.TextWindow.erase()
     InputMessageBox.edit()
     curses.curs_set(False)
@@ -684,16 +682,14 @@ def send_signed_message(interface, Message=''):
     SendMessageWindow.TextWindow.refresh()
 
     # Show cursor
-
     curses.curs_set(True)
-    # Let the user edit until Ctrl-G is struck.
 
+    # Let the user edit until Ctrl-G is struck.
     InputMessageWindow.TextWindow.erase()
     InputMessageBox.edit()
     curses.curs_set(False)
 
     # Get resulting contents
-
     TheMessage = InputMessageBox.gather().replace("\n", " ")
 
     # remove last character which seems to be interfering with line printing
@@ -724,7 +720,7 @@ def send_signed_message(interface, Message=''):
 def go_to_sleep(TimeToSleep):
     Window2.scroll_print("GoToSleep({})".format(TimeToSleep), 2, TimeStamp=True)
     for i in range(0, (TimeToSleep * 10)):
-        # Check for keyboard input      --
+        # Check for keyboard input
         poll_keyboard()
         time.sleep(0.1)
 
@@ -855,11 +851,11 @@ def display_help_info():
     HelpWindow.scroll_print("L - Show LOGS", 7)
     HelpWindow.scroll_print("N - Show all NODES", 7)
     HelpWindow.scroll_print("Q - QUIT program", 7)
-    HelpWindow.scroll_print("R - RESTART MeshWatch", 7)
+    HelpWindow.scroll_print("R - RESTART Black Lager", 7)
     HelpWindow.scroll_print("U - SEND unsigned message", 7)
     HelpWindow.scroll_print("S - SEND signed message", 7)
     HelpWindow.scroll_print("T - TEST mesh network", 7)
-    HelpWindow.scroll_print("K - Assign Keys To Device", 7)
+    HelpWindow.scroll_print("K - Assign KEYS", 7)
     HelpWindow.scroll_print("SPACEBAR - Slow/Fast output", 7)
 
 
@@ -1157,30 +1153,24 @@ def main(stdscr):
         AdditionalInfo = "Main function "
         error_handler(ErrorMessage, TraceMessage, AdditionalInfo, stdscr)
 
-# --------------------------------------
-# Main (pre-amble                    --
-# --------------------------------------
-
     # if SIGINT or CTL-C detected, run SIGINT_handler to exit gracefully
     signal(SIGINT, sigint_handler)
 
 
-# only execute if we are in main
 if __name__ == '__main__':
     try:
         # Initialize curses
         stdscr = curses.initscr()
-        # Turn off echoing of keys, and enter cbreak mode,
-        # where no buffering is performed on keyboard input
+        # Turn off echoing of keys, and enter cbreak mode, where no buffering is performed on keyboard input
         curses.noecho()
         curses.cbreak()
         curses.curs_set(0)
 
-        # In keypad mode, escape sequences for special keys
-        # (like the cursor keys) will be interpreted and
-        # a special value like curses.KEY_LEFT will be returned
+        # In keypad mode, escape sequences for special keys (like the cursor keys) will be interpreted
+        # and a special value like curses.KEY_LEFT will be returned
         stdscr.keypad(1)
-        main(stdscr)                    # Enter the main loop
+        # Enter the main loop
+        main(stdscr)
         # Set everything back to normal
         final_cleanup(stdscr)
 
