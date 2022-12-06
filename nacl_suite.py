@@ -10,7 +10,7 @@ class NaclSuite:
         # Secret vault stores collections of device name & corresponding keys
         # value is
         self.secret_vault = {}
-        self.book = persona_pb2.Wallet()
+        self.wallet = persona_pb2.Wallet()
 
     def align_with_config(self):
         people = self.read_from_config()
@@ -22,9 +22,9 @@ class NaclSuite:
         return path_to_script[:-13] + "/meshtastic_node/config.txt"
 
     def read_from_config(self):
-        file_name = self.get_config_path()
+        filename = self.get_config_path()
         temp = persona_pb2.Wallet()
-        f = open(file_name, "rb")
+        f = open(filename, "rb")
         temp.ParseFromString(f.read())
         print( type(temp.person))
         for person in temp.person:
@@ -72,16 +72,16 @@ class NaclSuite:
         new_dude.node_num = num
         new_dude.public_key = bytes(public_key)
         new_dude.private_key = bytes(private_key)
-        self.book.person.append(new_dude)
+        self.wallet.person.append(new_dude)
 
     def write_all_secrets_to_file(self):
         file_name = self.get_config_path()
         f = open(file_name, 'ab')
-        f.write(self.book.SerializeToString())
+        f.write(self.wallet.SerializeToString())
         f.close()
 
     def print_book(self):
-        print(self.book)
+        print(self.wallet)
 
 # suite = naclSuite()
 # pub, priv = suite.generate_key_pairs("Mike")
