@@ -1,10 +1,12 @@
 from cipher_suite.nacl_suite import naclSuite
+from meshtastic_node import persona_pb2
 import sys
 import nacl.utils
 from nacl.public import PrivateKey, Box
 from nacl.signing import SigningKey
 from nacl.signing import VerifyKey
 from nacl.encoding import HexEncoder
+import os
 
 # Return public key and private key
 def generate_key():
@@ -78,7 +80,34 @@ def hex_encoder():
     signature_bytes = HexEncoder.decode(signed_hex.signature)
     verify_key.verify(signed_hex.message, signature_bytes,
                 encoder=HexEncoder)
+    try:
+        verify_key.verify(signed_hex.message, signature_bytes,
+                encoder=HexEncoder)
+    except nacl.exceptions.BadSignatureError:
+        print("nacl.exceptions.BadSignatureError: Signature was forged or corrupt")
 
+
+def forged_hex_encoder():
+    signing_key = SigningKey.generate()
+
+    signed_hex = signing_key.sign(b"Testing", encoder=HexEncoder)
+    verify_key = signing_key.verify_key
+
+    verify_key_hex = verify_key.encode(encoder=HexEncoder)
+
+    verify_key = VerifyKey(verify_key_hex, encoder=HexEncoder)
 
     forged = signed_hex[:-1] + bytes([int(signed_hex[-1]) ^ 1])
-    verify_key.verify(forged)
+    try:
+        verify_key.verify(forged)
+    except nacl.exceptions.BadSignatureError:
+        print("nacl.exceptions.BadSignatureError: Signature was forged or corrupt")
+
+def verify_read_from_config():
+    path_to_script = os.path.dirname(os.path.realpath(__file__))
+    fileName = path_to_script[:-13] + "/meshtastic_node/config.txt"
+    temp = persona_pb2.secret_book()
+    f = open(fileName, "rb")
+    temp.ParseFromString(f.read())
+    assert temp.person.name == 'Test' and temp.person.mac_address == "Test Address" 
+
