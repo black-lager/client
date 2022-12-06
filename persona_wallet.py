@@ -3,7 +3,7 @@ from nacl.signing import SigningKey
 import sys
 
 
-class BlackLagerWallet:
+class PersonaWallet:
     """A wrapper around the protobuf Wallet message. Read and write wallet from disk. Create new personas."""
 
     def __init__(self):
@@ -76,8 +76,8 @@ class BlackLagerWallet:
         f.close()
 
 
-wallet = BlackLagerWallet()
-print("Current persona:", wallet.current_persona.local_name)
-print("Saving the following wallet to disk:")
-print(wallet.wallet_message)
-wallet.write_wallet_to_file()
+# wallet = PersonaWallet()
+# print("Current persona:", wallet.current_persona.local_name)
+# print("Saving the following wallet to disk:")
+# print(wallet.wallet_message)
+# wallet.write_wallet_to_file()

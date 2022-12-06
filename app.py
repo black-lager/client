@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from persona_wallet import PersonaWallet
 from textwindow import TextWindow
 from textpad import TextPad
 from utils import *
@@ -18,10 +19,10 @@ import os
 # to review logfiles
 import subprocess
 
-# for calculting distance
+# for calculating distance
 import geopy.distance
 
-# For capturing keypresses and drawing text boxes
+# For capturing key presses and drawing text boxes
 import curses
 from curses.textpad import Textbox
 
@@ -31,10 +32,6 @@ from sys import exit
 
 # cipher suite
 from nacl_suite import NaclSuite
-
-#
-# Variable Declaration
-#
 
 NAME = "BlackLager"
 DESCRIPTION = "Send and receive signed and unsigned messages from a Meshtastic device."
@@ -300,10 +297,9 @@ def decode_packet(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
     global HardwareModel
     global DeviceID
 
-    # This is a recursive funtion that will decode a packet (get key/value pairs from a dictionary)
+    # This is a recursive function that will decode a packet (get key/value pairs from a dictionary)
     # if the value is itself a dictionary, recurse
     Window2.scroll_print("DecodePacket", 2, TimeStamp=True)
-    #Filler = ('-' *  len(inspect.stack(0)))
 
     # used to indent packets
     if (PacketParent.upper() != 'MAINPACKET'):
@@ -1159,6 +1155,9 @@ def main(stdscr):
 
 if __name__ == '__main__':
     try:
+        # Create Persona wallet
+        wallet = PersonaWallet()
+
         # Initialize curses
         stdscr = curses.initscr()
         # Turn off echoing of keys, and enter cbreak mode, where no buffering is performed on keyboard input
@@ -1171,6 +1170,9 @@ if __name__ == '__main__':
         stdscr.keypad(1)
         # Enter the main loop
         main(stdscr)
+        # Save updated wallet data to disk
+        wallet.write_wallet_to_file()
+
         # Set everything back to normal
         final_cleanup(stdscr)
 
