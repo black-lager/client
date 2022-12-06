@@ -20,6 +20,28 @@ class BlackLagerWallet:
             print("Usage:", sys.argv[0], "WALLET_FILE")
             sys.exit(-1)
 
+        self.read_wallet_from_file()
+
+        # TODO: make persona selection CLI more robust, maybe use Python Click library
+        if self.wallet_message.my_personas:
+            print("Your personas:")
+            for index, persona in enumerate(self.wallet_message.my_personas):
+                print(index, persona.local_name)
+            create_new_input = input("Would you like to use an existing persona? [y/n]: ")
+            create_new = create_new_input.lower() == "n"
+        else:
+            print("No existing personas found. Creating new persona.")
+            create_new = True
+
+        if create_new:
+            self.current_persona = self.create_new_persona()
+        else:
+            persona_selection = -1
+            while not persona_selection > -1 and persona_selection < len(self.wallet_message.my_personas):
+                persona_selection = int(input("Select a persona to use: "))
+
+            self.current_persona = self.wallet_message.my_personas[persona_selection]
+
     def read_wallet_from_file(self):
         """Read wallet data from the wallet_path file and parse it into the wallet_message protobuf object"""
         try:
@@ -27,16 +49,17 @@ class BlackLagerWallet:
             self.wallet_message.ParseFromString(f.read())
             f.close()
         except IOError:
-            print("Creating wallet file.")
+            print("Creating new wallet file.")
 
     def create_new_persona(self):
-        """Add a new owned persona to the wallet and prompt the user for its data"""
+        """Prompt user for a name and add a new owned persona to the wallet."""
         new_persona = self.wallet_message.my_personas.add()
         new_persona.owned = True
         new_persona.local_name = input("Enter name: ")
         signing_key = SigningKey.generate()
         new_persona.private_key = signing_key.__bytes__()
         new_persona.public_key = signing_key.verify_key.__bytes__()
+        return new_persona
 
     def save_peer_persona(self, name, public_key):
         """Save a peer persona to wallet"""
@@ -54,8 +77,7 @@ class BlackLagerWallet:
 
 
 wallet = BlackLagerWallet()
-wallet.read_wallet_from_file()
-wallet.create_new_persona()
-wallet.save_peer_persona("jackson")
+print("Current persona:", wallet.current_persona.local_name)
+print("Saving the following wallet to disk:")
 print(wallet.wallet_message)
 wallet.write_wallet_to_file()
