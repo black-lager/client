@@ -3,6 +3,8 @@ import sys
 
 
 class BlackLagerWallet:
+    """A wrapper around the protobuf Wallet message. Read and write wallet from disk. Create new personas."""
+
     def __init__(self):
         """Initialize a Wallet object. Check if a command line argument is provided for the wallet file.
         If there is one provided, then set it as the wallet path. Else set the default wallet path
@@ -32,9 +34,13 @@ class BlackLagerWallet:
         new_persona.local_name = input("Enter name: ")
         new_persona.owned = True
 
+    def save_peer_persona(self, name):
+        peer_persona = self.wallet_message.peer_personas.add()
+        peer_persona.local_name = name
+        peer_persona.owned = False
+
     def write_wallet_to_file(self):
         """Writes wallet data out to a file on disk"""
-        # serializes the message and returns it as a string.
         # Note that the bytes are binary, not text; we only use the str type as a convenient container.
         f = open(self.wallet_path, "wb")
         f.write(self.wallet_message.SerializeToString())
@@ -44,5 +50,6 @@ class BlackLagerWallet:
 wallet = BlackLagerWallet()
 wallet.read_wallet_from_file()
 wallet.create_new_persona()
+wallet.save_peer_persona("jackson")
 print(wallet.wallet_message)
 wallet.write_wallet_to_file()
