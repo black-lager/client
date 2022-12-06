@@ -1,14 +1,13 @@
 import nacl.utils
 from meshtastic_node import persona_pb2
 from nacl.public import PrivateKey, Box
-import os
+import os, sys
 
 class naclSuite():
     # suite for PyNaCl
 
     def __init__(self):
         # Secret vault stores collections of device name & corresponding keys
-        # value is 
         self.secret_vault = {}
         self.book = persona_pb2.secret_book()
 
@@ -82,29 +81,3 @@ class naclSuite():
 
     def print_book(self):
         print(self.book)
-
-# suite = naclSuite()
-# pub, priv = suite.generate_key_pairs("Mike")
-# print(pub)
-# print(bytes(pub))
-# suite.add_person_to_book('MIke','1717 Webster',2, bytes(pub), bytes(priv))
-# suite.write_all_secrets_to_file()
-# suite.read_from_config()
-
-# path_to_script = os.path.dirname(os.path.abspath(__file__))
-# fileName = os.path.join(path_to_script[:-13], "meshtastic_node/config.txt")
-# f = open(fileName,'rb')
-# person = persona_pb2.persona()
-# person.ParseFromString(f.read())
-# print(person)
-# f.close()
-# print(type(person))
-# print(person)
-
-# suite = naclSuite()
-# if suite.secret_vault:
-#     print(suite.secret_vault)
-# else:
-#     print('no')
-
-# suite.remove_key_pairs('new')
