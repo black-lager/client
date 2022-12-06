@@ -1,4 +1,5 @@
 from black_lager import persona_pb2
+from nacl.signing import SigningKey
 import sys
 
 
@@ -26,18 +27,23 @@ class BlackLagerWallet:
             self.wallet_message.ParseFromString(f.read())
             f.close()
         except IOError:
-            print("Could not open wallet file. Creating a new one.")
+            print("Creating wallet file.")
 
     def create_new_persona(self):
         """Add a new owned persona to the wallet and prompt the user for its data"""
         new_persona = self.wallet_message.my_personas.add()
-        new_persona.local_name = input("Enter name: ")
         new_persona.owned = True
+        new_persona.local_name = input("Enter name: ")
+        signing_key = SigningKey.generate()
+        new_persona.private_key = signing_key.__bytes__()
+        new_persona.public_key = signing_key.verify_key.__bytes__()
 
-    def save_peer_persona(self, name):
+    def save_peer_persona(self, name, public_key):
+        """Save a peer persona to wallet"""
         peer_persona = self.wallet_message.peer_personas.add()
-        peer_persona.local_name = name
         peer_persona.owned = False
+        peer_persona.local_name = name
+        peer_persona.public_key = public_key
 
     def write_wallet_to_file(self):
         """Writes wallet data out to a file on disk"""
