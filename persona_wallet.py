@@ -1,5 +1,6 @@
 from black_lager import persona_pb2
 from nacl.signing import SigningKey
+import pickle
 import sys
 
 
@@ -57,8 +58,8 @@ class PersonaWallet:
         new_persona.owned = True
         new_persona.local_name = input("Enter name: ")
         signing_key = SigningKey.generate()
-        new_persona.private_key = signing_key.__bytes__()
-        new_persona.public_key = signing_key.verify_key.__bytes__()
+        new_persona.private_key = pickle.dumps(signing_key)
+        new_persona.public_key = pickle.dumps(signing_key.verify_key)
         return new_persona
 
     def save_peer_persona(self, name, public_key):
