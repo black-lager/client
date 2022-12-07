@@ -34,6 +34,7 @@ from sys import exit
 # PyNaCl libsodium library
 from nacl.encoding import Base64Encoder
 from nacl_suite import NaclSuite
+from nacl.signing import VerifyKey
 
 NAME = "BlackLager"
 DESCRIPTION = "Send and receive signed and unsigned messages from a Meshtastic device."
@@ -374,15 +375,26 @@ def on_receive(packet, interface):
     From = packet.get('from')
 
     # Even better method, use this recursively to decode all the packets of packets
-    decode_packet('MainPacket', packet, Filler='',
-                  FillerChar='', PrintSleep=PrintSleep)
+    decode_packet('MainPacket', packet, Filler='', FillerChar='', PrintSleep=PrintSleep)
 
     if UnsignedMessage:
-        Window3.scroll_print("Unsigned message from: {} - {}".format(From,
-                                                                     UnsignedMessage), 2, TimeStamp=True)
+        Window3.scroll_print("Unsigned message from: {} - {}".format(From, UnsignedMessage), 2, TimeStamp=True)
     elif SignedMessage:
-        Window3.scroll_print("Signed message from: {} - {}".format(From,
-                                                                   SignedMessage), 2, TimeStamp=True)
+        # Split the concatenated byte string into the message and key
+        signed_b64 = SignedMessage[:-64]
+        verify_key_b64 = SignedMessage[-64:]
+
+        print("Signed message length: " + str(len(SignedMessage)) + ", signed_len: " + str(len(signed_b64)) + ", verify_len: " + str(len(verify_key_b64)))
+
+        # # Create a VerifyKey object from a base64 serialized public key
+        # verify_key = VerifyKey(verify_key_b64, encoder=Base64Encoder)
+        #
+        # # Check the validity of a message's signature
+        # signature_bytes = Base64Encoder.decode(signed_b64.signature)
+        # verify_key.verify(signed_b64.message, signature_bytes, encoder=Base64Encoder)
+
+        # text_message = signed_b64.decode('utf-8')
+        Window3.scroll_print("Signed message from: {} - {}".format(From, SignedMessage), 2, TimeStamp=True)
 
     Window4.scroll_print("=======================================================", 2)
     Window4.scroll_print(" ", 2)
