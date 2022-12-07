@@ -700,9 +700,17 @@ def send_signed_message(interface, Message=''):
 
     # Convert the text message to bytes and sign it with the private key
     text_message_bytes = TheMessage.encode('utf-8')
-    signed_message = signing_key.sign(text_message_bytes, encoder=Base64Encoder)
 
-    signed_message_bytes = pickle.dumps(signed_message)
+    # Sign a message with the signing key
+    signed_b64 = signing_key.sign(text_message_bytes, encoder=Base64Encoder)
+
+    # Obtain the verify key for a given signing key
+    verify_key = signing_key.verify_key
+
+    # Serialize the verify key to send it to a third party
+    verify_key_b64 = verify_key.encode(encoder=Base64Encoder)
+
+    signed_message_bytes = signed_b64 + verify_key_b64
 
     interface.sendSignedText(signed_message_bytes, wantAck=True)
 
