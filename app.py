@@ -15,6 +15,7 @@ import argparse
 import collections
 import sys
 import os
+import pickle
 
 # to review logfiles
 import subprocess
@@ -30,7 +31,8 @@ from curses.textpad import Textbox
 from signal import signal, SIGINT
 from sys import exit
 
-# cipher suite
+# PyNaCl libsodium library
+from nacl.encoding import Base64Encoder
 from nacl_suite import NaclSuite
 
 NAME = "BlackLager"
@@ -91,6 +93,9 @@ global PriorityOutput
 
 PrintSleep = 0.1
 OldPrintSleep = PrintSleep
+
+# Create Persona wallet
+wallet = PersonaWallet()
 
 
 # --------------------------------------
@@ -372,15 +377,14 @@ def on_receive(packet, interface):
     decode_packet('MainPacket', packet, Filler='',
                   FillerChar='', PrintSleep=PrintSleep)
 
-    if (UnsignedMessage):
+    if UnsignedMessage:
         Window3.scroll_print("Unsigned message from: {} - {}".format(From,
                                                                      UnsignedMessage), 2, TimeStamp=True)
-    elif (SignedMessage):
+    elif SignedMessage:
         Window3.scroll_print("Signed message from: {} - {}".format(From,
                                                                    SignedMessage), 2, TimeStamp=True)
 
-    Window4.scroll_print(
-        "=======================================================", 2)
+    Window4.scroll_print("=======================================================", 2)
     Window4.scroll_print(" ", 2)
 
 
@@ -691,17 +695,23 @@ def send_signed_message(interface, Message=''):
     # remove last character which seems to be interfering with line printing
     TheMessage = TheMessage[0:-1]
 
-    # Send the message to the device
-    interface.sendSignedText(TheMessage, wantAck=True)
+    # Sign the message and send the signed message to the device
+    signing_key = pickle.loads(wallet.current_persona.private_key)
+
+    # Convert the text message to bytes and sign it with the private key
+    text_message_bytes = TheMessage.encode('utf-8')
+    signed_message = signing_key.sign(text_message_bytes, encoder=Base64Encoder)
+
+    signed_message_bytes = pickle.dumps(signed_message)
+
+    interface.sendSignedText(signed_message_bytes, wantAck=True)
 
     Window4.scroll_print(" ", 2)
-    Window4.scroll_print(
-        "==Signed Packet SENT===================================", 3)
+    Window4.scroll_print("==Signed Packet SENT===================================", 3)
     Window4.scroll_print("To:      All:", 3)
     Window4.scroll_print("From:    BaseStation", 3)
     Window4.scroll_print("Message: {}".format(TheMessage), 3)
-    Window4.scroll_print(
-        "=======================================================", 3)
+    Window4.scroll_print("=======================================================", 3)
     Window4.scroll_print(" ", 2)
 
     SendMessageWindow.clear()
@@ -709,8 +719,7 @@ def send_signed_message(interface, Message=''):
     SendMessageWindow.Title = 'Press U or S to send a message'
     SendMessageWindow.display_title()
 
-    Window3.scroll_print(
-        "Signed message to: All - {}".format(TheMessage), 2, TimeStamp=True)
+    Window3.scroll_print("Signed message to: All - {}".format(TheMessage), 2, TimeStamp=True)
 
 
 def go_to_sleep(TimeToSleep):
@@ -1155,9 +1164,6 @@ def main(stdscr):
 
 if __name__ == '__main__':
     try:
-        # Create Persona wallet
-        wallet = PersonaWallet()
-
         # Initialize curses
         stdscr = curses.initscr()
         # Turn off echoing of keys, and enter cbreak mode, where no buffering is performed on keyboard input
