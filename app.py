@@ -375,8 +375,8 @@ def on_receive(packet, interface):
         Window3.scroll_print("Unsigned message from: {} - {}".format(From, UnsignedMessage), 2, TimeStamp=True)
     elif SignedMessage:
         # Split the concatenated byte string into the message and key
-        signed_b64 = SignedMessage[:-31]
-        verify_key_b64 = SignedMessage[-31:]
+        signed_b64 = SignedMessage[:-32]
+        verify_key_b64 = SignedMessage[-32:]
 
         print("Verify key length: " + str(len(verify_key_b64)))
 
