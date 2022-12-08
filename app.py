@@ -36,6 +36,7 @@ from nacl_suite import NaclSuite
 
 from nacl.encoding import Base64Encoder
 from nacl.signing import VerifyKey
+from nacl.exceptions import BadSignatureError
 
 NAME = "BlackLager"
 DESCRIPTION = "Send and receive signed and unsigned messages from a Meshtastic device."
@@ -352,7 +353,7 @@ def decode_packet(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
 
 
 def on_receive(packet, interface):
-    """Called when a packet arrives"""
+    """Called when a new packet arrives"""
     global PacketsReceived
     global PacketsSent
 
@@ -362,33 +363,32 @@ def on_receive(packet, interface):
     Window4.scroll_print(" ", 2)
     Window4.scroll_print("==Packet RECEIVED======================================", 2)
 
-    Decoded = packet.get('decoded')
-    UnsignedMessage = Decoded.get('text')
-    SignedMessageBytes = Decoded.get('signed-text')
+    decoded = packet.get('decoded')
+    unsigned_message = decoded.get('text')
+    signed_message = decoded.get('signed-text')
 
-    To = packet.get('to')
-    From = packet.get('from')
+    sender = packet.get('from')
 
-    # Use this recursively to decode all the packets of packets
+    # Recursively decode all the packets of packets
     decode_packet('MainPacket', packet, Filler='', FillerChar='', PrintSleep=PrintSleep)
 
-    if UnsignedMessage:
-        Window3.scroll_print("Unsigned message from: {} - {}".format(From, UnsignedMessage), 2, TimeStamp=True)
-    elif SignedMessageBytes:
+    if unsigned_message:
+        Window3.scroll_print("Unsigned message from: {} - {}".format(sender, unsigned_message), 2, TimeStamp=True)
+    elif signed_message:
         # Split the concatenated byte string into the message and key
-        signed_b64 = SignedMessageBytes[:-64]
-        verify_key_b64 = SignedMessageBytes[-64:]
+        signed_b64 = signed_message[:-64]
+        verify_key_b64 = signed_message[-64:]
 
         # Create a VerifyKey object from a base64 serialized public key
         verify_key = VerifyKey(verify_key_b64, encoder=Base64Encoder)
 
         # Check the validity of a message's signature
-        text_message_bytes = verify_key.verify(signed_b64, encoder=Base64Encoder)
-        # TODO: catch exception and print that a message is forged
-
-
-        text_message = text_message_bytes.decode('utf-8')
-        Window3.scroll_print("Signed message from: {} - {}".format(From, text_message), 2, TimeStamp=True)
+        try:
+            text_message_bytes = verify_key.verify(signed_b64, encoder=Base64Encoder)
+            text_message = text_message_bytes.decode('utf-8')
+            Window3.scroll_print("✅ Verified signed message from: {} - {}".format(sender, text_message), 2, TimeStamp=True)
+        except BadSignatureError:
+            Window3.scroll_print("❌ Signature from {} was forged or corrupt".format(sender), 2, TimeStamp=True)
 
     Window4.scroll_print("=======================================================", 2)
     Window4.scroll_print(" ", 2)
