@@ -268,7 +268,7 @@ def create_text_windows():
         Window4.Title, Window4.TitleColor = "Data Packets", 5
         Window5.Title, Window5.TitleColor = "Extended Information", 6
         HelpWindow.Title, HelpWindow.TitleColor = "Help", 7
-        SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press S to send a signed message", 7
+        SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press S to send a message", 7
 
         TitleWindow.window_print(0, 0, TitleWindow.Title)
         Window1.display_title()
@@ -612,7 +612,7 @@ def send_keys(interface):
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press S to send a signed message'
+    SendMessageWindow.Title = 'Press S to send a message'
     SendMessageWindow.display_title()
 
     Window3.scroll_print("To: All - {}".format(TheMessage), 2, TimeStamp=True)
@@ -664,7 +664,7 @@ def send_unsigned_message(interface, Message=''):
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press S to send a signed message'
+    SendMessageWindow.Title = 'Press S to send a message'
     SendMessageWindow.display_title()
 
     Window3.scroll_print(
@@ -730,7 +730,7 @@ def send_signed_message(interface, Message=''):
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press S to send a signed message'
+    SendMessageWindow.Title = 'Press S to send a message'
     SendMessageWindow.display_title()
 
     Window3.scroll_print("SIGNED message to: All - {}".format(TheMessage), 2, TimeStamp=True)
@@ -1049,7 +1049,7 @@ def test_mesh(interface, MessageCount=10, Sleep=10):
 
         SendMessageWindow.clear()
         SendMessageWindow.TitleColor = 2
-        SendMessageWindow.Title = 'Press S to send a signed message'
+        SendMessageWindow.Title = 'Press S to send a message'
         SendMessageWindow.display_title()
 
         Window3.scroll_print(
