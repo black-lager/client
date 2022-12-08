@@ -398,10 +398,7 @@ def on_receive(packet, interface):
 def on_connection_established(interface, topic=pub.AUTO_TOPIC):
     global PriorityOutput
 
-    if (PriorityOutput == False):
-
-        # Window2.ScrollPrint('onConnectionEstablished',2,TimeStamp=True)
-        #Window1.WindowPrint(1,1,"Status: CONNECTED",2)
+    if not PriorityOutput:
         update_status_window(NewDeviceStatus="CONNECTED", Color=2)
 
         From = "BaseStation"
@@ -536,6 +533,7 @@ def process_keypress(key):
         display_nodes(interface)
 
     elif key == "q":
+        wallet.write_wallet_to_file()
         final_cleanup(stdscr)
         exit()
 
@@ -1038,13 +1036,11 @@ def test_mesh(interface, MessageCount=10, Sleep=10):
         interface.sendText(TheMessage, wantAck=True)
 
         Window4.scroll_print(" ", 2)
-        Window4.scroll_print(
-            "==Packet SENT==========================================", 3)
+        Window4.scroll_print("==Packet SENT==========================================", 3)
         Window4.scroll_print("To:      All:", 3)
         Window4.scroll_print("From:    BaseStation", 3)
         Window4.scroll_print("Message: {}".format(TheMessage), 3)
-        Window4.scroll_print(
-            "=======================================================", 3)
+        Window4.scroll_print("=======================================================", 3)
         Window4.scroll_print(" ", 2)
 
         SendMessageWindow.clear()
@@ -1052,31 +1048,10 @@ def test_mesh(interface, MessageCount=10, Sleep=10):
         SendMessageWindow.Title = 'Press S to send a message'
         SendMessageWindow.display_title()
 
-        Window3.scroll_print(
-            "To: All - {}".format(TheMessage), 2, TimeStamp=True)
+        Window3.scroll_print("To: All - {}".format(TheMessage), 2, TimeStamp=True)
 
         go_to_sleep(Sleep)
 
-
-# ------------------------------------------------------------------------------
-#   __  __    _    ___ _   _                                                 --
-#  |  \/  |  / \  |_ _| \ | |                                                --
-#  | |\/| | / _ \  | ||  \| |                                                --
-#  | |  | |/ ___ \ | || |\  |                                                --
-#  |_|  |_/_/   \_\___|_| \_|                                                --
-#                                                                            --
-#  ____  ____   ___   ____ _____ ____ ____ ___ _   _  ____                   --
-# |  _ \|  _ \ / _ \ / ___| ____/ ___/ ___|_ _| \ | |/ ___|                  --
-# | |_) | |_) | | | | |   |  _| \___ \___ \| ||  \| | |  _                   --
-# |  __/|  _ <| |_| | |___| |___ ___) |__) | || |\  | |_| |                  --
-# |_|   |_| \_\\___/ \____|_____|____/____/___|_| \_|\____|                  --
-#                                                                            --
-# ------------------------------------------------------------------------------
-
-
-# --------------------------------------
-# Main (function)                    --
-# --------------------------------------
 
 def main(stdscr):
     global interface
@@ -1112,7 +1087,7 @@ def main(stdscr):
         BaseLat = 0
         BaseLon = 0
 
-        if (curses.LINES < 57 or curses.COLS < 190):
+        if curses.LINES < 57 or curses.COLS < 190:
             ErrorMessage = "Display area too small. Increase window size or reduce font size."
             TraceMessage = traceback.format_stack()[0]
             AdditionalInfo = "57 lines and 190 columns required. Found {} lines and {} columns.".format(
@@ -1123,15 +1098,13 @@ def main(stdscr):
         Window4.scroll_print("System initiated", 2)
         Window2.scroll_print("Priorityoutput: {}".format(PriorityOutput), 1)
 
-        # Instanciate a meshtastic object
+        # Instantiate a meshtastic object
         # By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
-        if (args.host):
-            Window4.scroll_print(
-                "Connecting to device on host {}".format(args.host), 2)
+        if args.host:
+            Window4.scroll_print("Connecting to device on host {}".format(args.host), 2)
             interface = meshtastic.tcp_interface.TCPInterface(args.host)
-        elif (args.port):
-            Window4.scroll_print(
-                "Connecting to device at port {}".format(args.port), 2)
+        elif args.port:
+            Window4.scroll_print("Connecting to device at port {}".format(args.port), 2)
             interface = meshtastic.serial_interface.SerialInterface(args.port)
         else:
             Window4.scroll_print("Finding Meshtastic device", 2)
@@ -1139,19 +1112,16 @@ def main(stdscr):
 
         # subscribe to connection and receive channels
         Window4.scroll_print("Subscribe to publications", 2)
-        pub.subscribe(on_connection_established,
-                      "meshtastic.connection.established")
+        pub.subscribe(on_connection_established, "meshtastic.connection.established")
         pub.subscribe(on_connection_lost, "meshtastic.connection.lost")
 
-        # does not seem to work
-        #pub.subscribe(onNodeUpdated,           "meshtastic.node.updated")
         time.sleep(2)
         # Get node info for connected device
         Window4.scroll_print("Requesting device info", 2)
         get_node_info(interface)
 
         # Check for message to be sent (command line option)
-        if (SendMessage):
+        if SendMessage:
             interface.sendText(TheMessage, wantAck=True)
 
         # Go into listening mode
@@ -1159,12 +1129,8 @@ def main(stdscr):
         Window4.scroll_print("Subscribing to interface channels...", 2)
         pub.subscribe(on_receive, "meshtastic.receive")
 
-        while (1 == 1):
+        while True:
             go_to_sleep(5)
-
-        interface.close()
-        Window4.scroll_print("--End of Line------------", 2)
-        Window4.scroll_print("", 2)
 
     except Exception as ErrorMessage:
         time.sleep(2)
@@ -1190,8 +1156,6 @@ if __name__ == '__main__':
         stdscr.keypad(1)
         # Enter the main loop
         main(stdscr)
-        # Save updated wallet data to disk
-        wallet.write_wallet_to_file()
 
         # Set everything back to normal
         final_cleanup(stdscr)
