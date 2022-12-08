@@ -268,7 +268,7 @@ def create_text_windows():
         Window4.Title, Window4.TitleColor = "Data Packets", 5
         Window5.Title, Window5.TitleColor = "Extended Information", 6
         HelpWindow.Title, HelpWindow.TitleColor = "Help", 7
-        SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press U or S to send a message", 7
+        SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press S to send a signed message", 7
 
         TitleWindow.window_print(0, 0, TitleWindow.Title)
         Window1.display_title()
@@ -373,7 +373,7 @@ def on_receive(packet, interface):
     decode_packet('MainPacket', packet, Filler='', FillerChar='', PrintSleep=PrintSleep)
 
     if unsigned_message:
-        Window3.scroll_print("Unsigned message from: {} - {}".format(sender, unsigned_message), 2, TimeStamp=True)
+        Window3.scroll_print("UNSIGNED message from: {} - {}".format(sender, unsigned_message), 2, TimeStamp=True)
     elif signed_message:
         # Split the concatenated byte string into the message and key
         signed_b64 = signed_message[:-64]
@@ -386,9 +386,9 @@ def on_receive(packet, interface):
         try:
             text_message_bytes = verify_key.verify(signed_b64, encoder=HexEncoder)
             text_message = text_message_bytes.decode('utf-8')
-            Window3.scroll_print("✅ Verified signed message from: {} - {}".format(sender, text_message), 2, TimeStamp=True)
+            Window3.scroll_print("VERIFIED SIGNED message from: {} - {}".format(sender, text_message), 2, TimeStamp=True)
         except BadSignatureError:
-            Window3.scroll_print("❌ Signature from {} was forged or corrupt".format(sender), 2, TimeStamp=True)
+            Window3.scroll_print("Signature from {} was forged or corrupt".format(sender), 2, TimeStamp=True)
 
     Window4.scroll_print("=======================================================", 2)
     Window4.scroll_print(" ", 2)
@@ -612,7 +612,7 @@ def send_keys(interface):
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press U or S to send a message'
+    SendMessageWindow.Title = 'Press S to send a signed message'
     SendMessageWindow.display_title()
 
     Window3.scroll_print("To: All - {}".format(TheMessage), 2, TimeStamp=True)
@@ -664,11 +664,11 @@ def send_unsigned_message(interface, Message=''):
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press U or S to send a message'
+    SendMessageWindow.Title = 'Press S to send a signed message'
     SendMessageWindow.display_title()
 
     Window3.scroll_print(
-        "Unsigned message to: All - {}".format(TheMessage), 2, TimeStamp=True)
+        "UNSIGNED message to: All - {}".format(TheMessage), 2, TimeStamp=True)
 
 
 def send_signed_message(interface, Message=''):
@@ -730,10 +730,10 @@ def send_signed_message(interface, Message=''):
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press U or S to send a message'
+    SendMessageWindow.Title = 'Press S to send a signed message'
     SendMessageWindow.display_title()
 
-    Window3.scroll_print("Signed message to: All - {}".format(TheMessage), 2, TimeStamp=True)
+    Window3.scroll_print("SIGNED message to: All - {}".format(TheMessage), 2, TimeStamp=True)
 
 
 def go_to_sleep(TimeToSleep):
@@ -1049,7 +1049,7 @@ def test_mesh(interface, MessageCount=10, Sleep=10):
 
         SendMessageWindow.clear()
         SendMessageWindow.TitleColor = 2
-        SendMessageWindow.Title = 'Press U or S to send a message'
+        SendMessageWindow.Title = 'Press S to send a signed message'
         SendMessageWindow.display_title()
 
         Window3.scroll_print(
