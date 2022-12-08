@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from persona_wallet import PersonaWallet
 from textwindow import TextWindow
 from textpad import TextPad
 from utils import *
@@ -14,14 +15,15 @@ import argparse
 import collections
 import sys
 import os
+import pickle
 
 # to review logfiles
 import subprocess
 
-# for calculting distance
+# for calculating distance
 import geopy.distance
 
-# For capturing keypresses and drawing text boxes
+# For capturing key presses and drawing text boxes
 import curses
 from curses.textpad import Textbox
 
@@ -29,12 +31,12 @@ from curses.textpad import Textbox
 from signal import signal, SIGINT
 from sys import exit
 
-# cipher suite
-from cipher_suite.nacl_suite import naclSuite
+# PyNaCl libsodium library
+from nacl_suite import NaclSuite
 
-#
-# Variable Declaration
-#
+from nacl.encoding import HexEncoder
+from nacl.signing import VerifyKey
+from nacl.exceptions import BadSignatureError
 
 NAME = "BlackLager"
 DESCRIPTION = "Send and receive signed and unsigned messages from a Meshtastic device."
@@ -94,6 +96,9 @@ global PriorityOutput
 
 PrintSleep = 0.1
 OldPrintSleep = PrintSleep
+
+# Create Persona wallet
+wallet = PersonaWallet()
 
 
 # --------------------------------------
@@ -263,7 +268,7 @@ def create_text_windows():
         Window4.Title, Window4.TitleColor = "Data Packets", 5
         Window5.Title, Window5.TitleColor = "Extended Information", 6
         HelpWindow.Title, HelpWindow.TitleColor = "Help", 7
-        SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press U or S to send a message", 7
+        SendMessageWindow.Title, SendMessageWindow.TitleColor = "Press S to send a message", 7
 
         TitleWindow.window_print(0, 0, TitleWindow.Title)
         Window1.display_title()
@@ -300,10 +305,9 @@ def decode_packet(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
     global HardwareModel
     global DeviceID
 
-    # This is a recursive funtion that will decode a packet (get key/value pairs from a dictionary)
+    # This is a recursive function that will decode a packet (get key/value pairs from a dictionary)
     # if the value is itself a dictionary, recurse
     Window2.scroll_print("DecodePacket", 2, TimeStamp=True)
-    #Filler = ('-' *  len(inspect.stack(0)))
 
     # used to indent packets
     if (PacketParent.upper() != 'MAINPACKET'):
@@ -333,29 +337,23 @@ def decode_packet(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
 
                 # Print the name/type of the packet
                 Window4.scroll_print(" ", 2)
-                # Window4.ScrollPrint("{}".format(Key).upper(),2)
                 LastPacketType = Key.upper()
 
-                decode_packet("{}/{}".format(PacketParent, Key).upper(),
-                              Value, Filler, FillerChar, PrintSleep=PrintSleep)
+                decode_packet("{}/{}".format(PacketParent, Key).upper(), Value, Filler, FillerChar, PrintSleep=PrintSleep)
 
             else:
                 # Print KEY if not RAW (gotta decode those further, or ignore)
                 if (Key == 'raw'):
-                    Window4.scroll_print(
-                        "{}  RAW value not yet suported by DecodePacket function".format(Filler), 2)
+                    Window4.scroll_print("{}  RAW value not yet suported by DecodePacket function".format(Filler), 2)
                 else:
-                    Window4.scroll_print(
-                        "  {}{}: {}".format(Filler, Key, Value), 2)
+                    Window4.scroll_print("  {}{}: {}".format(Filler, Key, Value), 2)
 
     else:
         Window2.scroll_print("Warning: Not a packet!", 5, TimeStamp=True)
 
-    #Window4.ScrollPrint("{}END PACKET: {} ".format(Filler,PacketParent.upper()),2)
-
 
 def on_receive(packet, interface):
-    """Called when a packet arrives"""
+    """Called when a new packet arrives"""
     global PacketsReceived
     global PacketsSent
 
@@ -363,28 +361,36 @@ def on_receive(packet, interface):
 
     Window2.scroll_print("onReceive", 2, TimeStamp=True)
     Window4.scroll_print(" ", 2)
-    Window4.scroll_print(
-        "==Packet RECEIVED======================================", 2)
+    Window4.scroll_print("==Packet RECEIVED======================================", 2)
 
-    Decoded = packet.get('decoded')
-    UnsignedMessage = Decoded.get('text')
-    SignedMessage = Decoded.get('signed-text')
-    To = packet.get('to')
-    From = packet.get('from')
+    decoded = packet.get('decoded')
+    unsigned_message = decoded.get('text')
+    signed_message = decoded.get('signed-text')
 
-    # Even better method, use this recursively to decode all the packets of packets
-    decode_packet('MainPacket', packet, Filler='',
-                  FillerChar='', PrintSleep=PrintSleep)
+    sender = packet.get('from')
 
-    if (UnsignedMessage):
-        Window3.scroll_print("Unsigned message from: {} - {}".format(From,
-                                                                     UnsignedMessage), 2, TimeStamp=True)
-    elif (SignedMessage):
-        Window3.scroll_print("Signed message from: {} - {}".format(From,
-                                                                   SignedMessage), 2, TimeStamp=True)
+    # Recursively decode all the packets of packets
+    decode_packet('MainPacket', packet, Filler='', FillerChar='', PrintSleep=PrintSleep)
 
-    Window4.scroll_print(
-        "=======================================================", 2)
+    if unsigned_message:
+        Window3.scroll_print("UNSIGNED message from: {} - {}".format(sender, unsigned_message), 2, TimeStamp=True)
+    elif signed_message:
+        # Split the concatenated byte string into the message and key
+        signed_b64 = signed_message[:-64]
+        verify_key_b64 = signed_message[-64:]
+
+        # Create a VerifyKey object from a base64 serialized public key
+        verify_key = VerifyKey(verify_key_b64, encoder=HexEncoder)
+
+        # Check the validity of a message's signature
+        try:
+            text_message_bytes = verify_key.verify(signed_b64, encoder=HexEncoder)
+            text_message = text_message_bytes.decode('utf-8')
+            Window3.scroll_print("VERIFIED SIGNED message from: {} - {}".format(sender, text_message), 2, TimeStamp=True)
+        except BadSignatureError:
+            Window3.scroll_print("Signature from {} was forged or corrupt".format(sender), 2, TimeStamp=True)
+
+    Window4.scroll_print("=======================================================", 2)
     Window4.scroll_print(" ", 2)
 
 
@@ -392,10 +398,7 @@ def on_receive(packet, interface):
 def on_connection_established(interface, topic=pub.AUTO_TOPIC):
     global PriorityOutput
 
-    if (PriorityOutput == False):
-
-        # Window2.ScrollPrint('onConnectionEstablished',2,TimeStamp=True)
-        #Window1.WindowPrint(1,1,"Status: CONNECTED",2)
+    if not PriorityOutput:
         update_status_window(NewDeviceStatus="CONNECTED", Color=2)
 
         From = "BaseStation"
@@ -530,6 +533,7 @@ def process_keypress(key):
         display_nodes(interface)
 
     elif key == "q":
+        wallet.write_wallet_to_file()
         final_cleanup(stdscr)
         exit()
 
@@ -557,7 +561,7 @@ def process_keypress(key):
 
 def send_keys(interface):
     node_list = []
-    suite = naclSuite()
+    suite = NaclSuite()
 
     Window2.scroll_print("SendSignedMessagePacket", 2)
     TheMessage=''
@@ -606,7 +610,7 @@ def send_keys(interface):
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press U or S to send a message'
+    SendMessageWindow.Title = 'Press S to send a message'
     SendMessageWindow.display_title()
 
     Window3.scroll_print("To: All - {}".format(TheMessage), 2, TimeStamp=True)
@@ -658,11 +662,11 @@ def send_unsigned_message(interface, Message=''):
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press U or S to send a message'
+    SendMessageWindow.Title = 'Press S to send a message'
     SendMessageWindow.display_title()
 
     Window3.scroll_print(
-        "Unsigned message to: All - {}".format(TheMessage), 2, TimeStamp=True)
+        "UNSIGNED message to: All - {}".format(TheMessage), 2, TimeStamp=True)
 
 
 def send_signed_message(interface, Message=''):
@@ -695,26 +699,39 @@ def send_signed_message(interface, Message=''):
     # remove last character which seems to be interfering with line printing
     TheMessage = TheMessage[0:-1]
 
-    # Send the message to the device
-    interface.sendSignedText(TheMessage, wantAck=True)
+    # Sign the message and send the signed message to the device
+    signing_key = pickle.loads(wallet.current_persona.private_key)
+
+    # Convert the text message to bytes and sign it with the private key
+    text_message_bytes = TheMessage.encode('utf-8')
+
+    # Sign a message with the signing key
+    signed_b64 = signing_key.sign(text_message_bytes, encoder=HexEncoder)
+
+    # Obtain the verify key for a given signing key
+    verify_key = signing_key.verify_key
+
+    # Serialize the verify key to send it to a third party
+    verify_key_b64 = verify_key.encode(encoder=HexEncoder)
+
+    signed_message_bytes = signed_b64 + verify_key_b64
+
+    interface.sendSignedText(signed_message_bytes, wantAck=True)
 
     Window4.scroll_print(" ", 2)
-    Window4.scroll_print(
-        "==Signed Packet SENT===================================", 3)
+    Window4.scroll_print("==Signed Packet SENT===================================", 3)
     Window4.scroll_print("To:      All:", 3)
     Window4.scroll_print("From:    BaseStation", 3)
     Window4.scroll_print("Message: {}".format(TheMessage), 3)
-    Window4.scroll_print(
-        "=======================================================", 3)
+    Window4.scroll_print("=======================================================", 3)
     Window4.scroll_print(" ", 2)
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
-    SendMessageWindow.Title = 'Press U or S to send a message'
+    SendMessageWindow.Title = 'Press S to send a message'
     SendMessageWindow.display_title()
 
-    Window3.scroll_print(
-        "Signed message to: All - {}".format(TheMessage), 2, TimeStamp=True)
+    Window3.scroll_print("SIGNED message to: All - {}".format(TheMessage), 2, TimeStamp=True)
 
 
 def go_to_sleep(TimeToSleep):
@@ -1019,45 +1036,22 @@ def test_mesh(interface, MessageCount=10, Sleep=10):
         interface.sendText(TheMessage, wantAck=True)
 
         Window4.scroll_print(" ", 2)
-        Window4.scroll_print(
-            "==Packet SENT==========================================", 3)
+        Window4.scroll_print("==Packet SENT==========================================", 3)
         Window4.scroll_print("To:      All:", 3)
         Window4.scroll_print("From:    BaseStation", 3)
         Window4.scroll_print("Message: {}".format(TheMessage), 3)
-        Window4.scroll_print(
-            "=======================================================", 3)
+        Window4.scroll_print("=======================================================", 3)
         Window4.scroll_print(" ", 2)
 
         SendMessageWindow.clear()
         SendMessageWindow.TitleColor = 2
-        SendMessageWindow.Title = 'Press U or S to send a message'
+        SendMessageWindow.Title = 'Press S to send a message'
         SendMessageWindow.display_title()
 
-        Window3.scroll_print(
-            "To: All - {}".format(TheMessage), 2, TimeStamp=True)
+        Window3.scroll_print("To: All - {}".format(TheMessage), 2, TimeStamp=True)
 
         go_to_sleep(Sleep)
 
-
-# ------------------------------------------------------------------------------
-#   __  __    _    ___ _   _                                                 --
-#  |  \/  |  / \  |_ _| \ | |                                                --
-#  | |\/| | / _ \  | ||  \| |                                                --
-#  | |  | |/ ___ \ | || |\  |                                                --
-#  |_|  |_/_/   \_\___|_| \_|                                                --
-#                                                                            --
-#  ____  ____   ___   ____ _____ ____ ____ ___ _   _  ____                   --
-# |  _ \|  _ \ / _ \ / ___| ____/ ___/ ___|_ _| \ | |/ ___|                  --
-# | |_) | |_) | | | | |   |  _| \___ \___ \| ||  \| | |  _                   --
-# |  __/|  _ <| |_| | |___| |___ ___) |__) | || |\  | |_| |                  --
-# |_|   |_| \_\\___/ \____|_____|____/____/___|_| \_|\____|                  --
-#                                                                            --
-# ------------------------------------------------------------------------------
-
-
-# --------------------------------------
-# Main (function)                    --
-# --------------------------------------
 
 def main(stdscr):
     global interface
@@ -1093,7 +1087,7 @@ def main(stdscr):
         BaseLat = 0
         BaseLon = 0
 
-        if (curses.LINES < 57 or curses.COLS < 190):
+        if curses.LINES < 57 or curses.COLS < 190:
             ErrorMessage = "Display area too small. Increase window size or reduce font size."
             TraceMessage = traceback.format_stack()[0]
             AdditionalInfo = "57 lines and 190 columns required. Found {} lines and {} columns.".format(
@@ -1104,15 +1098,13 @@ def main(stdscr):
         Window4.scroll_print("System initiated", 2)
         Window2.scroll_print("Priorityoutput: {}".format(PriorityOutput), 1)
 
-        # Instanciate a meshtastic object
+        # Instantiate a meshtastic object
         # By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
-        if (args.host):
-            Window4.scroll_print(
-                "Connecting to device on host {}".format(args.host), 2)
+        if args.host:
+            Window4.scroll_print("Connecting to device on host {}".format(args.host), 2)
             interface = meshtastic.tcp_interface.TCPInterface(args.host)
-        elif (args.port):
-            Window4.scroll_print(
-                "Connecting to device at port {}".format(args.port), 2)
+        elif args.port:
+            Window4.scroll_print("Connecting to device at port {}".format(args.port), 2)
             interface = meshtastic.serial_interface.SerialInterface(args.port)
         else:
             Window4.scroll_print("Finding Meshtastic device", 2)
@@ -1120,19 +1112,16 @@ def main(stdscr):
 
         # subscribe to connection and receive channels
         Window4.scroll_print("Subscribe to publications", 2)
-        pub.subscribe(on_connection_established,
-                      "meshtastic.connection.established")
+        pub.subscribe(on_connection_established, "meshtastic.connection.established")
         pub.subscribe(on_connection_lost, "meshtastic.connection.lost")
 
-        # does not seem to work
-        #pub.subscribe(onNodeUpdated,           "meshtastic.node.updated")
         time.sleep(2)
         # Get node info for connected device
         Window4.scroll_print("Requesting device info", 2)
         get_node_info(interface)
 
         # Check for message to be sent (command line option)
-        if (SendMessage):
+        if SendMessage:
             interface.sendText(TheMessage, wantAck=True)
 
         # Go into listening mode
@@ -1140,12 +1129,8 @@ def main(stdscr):
         Window4.scroll_print("Subscribing to interface channels...", 2)
         pub.subscribe(on_receive, "meshtastic.receive")
 
-        while (1 == 1):
+        while True:
             go_to_sleep(5)
-
-        interface.close()
-        Window4.scroll_print("--End of Line------------", 2)
-        Window4.scroll_print("", 2)
 
     except Exception as ErrorMessage:
         time.sleep(2)
@@ -1171,6 +1156,7 @@ if __name__ == '__main__':
         stdscr.keypad(1)
         # Enter the main loop
         main(stdscr)
+
         # Set everything back to normal
         final_cleanup(stdscr)
 

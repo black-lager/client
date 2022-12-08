@@ -30,4 +30,4 @@ jobs:
         with:
           add-paths: |
             protobufs
-            mesh
+            black_lager
