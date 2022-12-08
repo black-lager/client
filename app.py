@@ -32,8 +32,9 @@ from signal import signal, SIGINT
 from sys import exit
 
 # PyNaCl libsodium library
-from nacl.encoding import HexEncoder
 from nacl_suite import NaclSuite
+
+from nacl.encoding import Base64Encoder
 from nacl.signing import VerifyKey
 
 NAME = "BlackLager"
@@ -379,10 +380,11 @@ def on_receive(packet, interface):
         verify_key_b64 = SignedMessageBytes[-64:]
 
         # Create a VerifyKey object from a base64 serialized public key
-        verify_key = VerifyKey(verify_key_b64, encoder=HexEncoder)
+        verify_key = VerifyKey(verify_key_b64, encoder=Base64Encoder)
 
         # Check the validity of a message's signature
-        text_message_bytes = verify_key.verify(signed_b64, encoder=HexEncoder)
+        text_message_bytes = verify_key.verify(signed_b64, encoder=Base64Encoder)
+        # TODO: catch exception and print that a message is forged
 
 
         text_message = text_message_bytes.decode('utf-8')
@@ -706,13 +708,13 @@ def send_signed_message(interface, Message=''):
     text_message_bytes = TheMessage.encode('utf-8')
 
     # Sign a message with the signing key
-    signed_b64 = signing_key.sign(text_message_bytes, encoder=HexEncoder)
+    signed_b64 = signing_key.sign(text_message_bytes, encoder=Base64Encoder)
 
     # Obtain the verify key for a given signing key
     verify_key = signing_key.verify_key
 
     # Serialize the verify key to send it to a third party
-    verify_key_b64 = verify_key.encode(encoder=HexEncoder)
+    verify_key_b64 = verify_key.encode(encoder=Base64Encoder)
 
     signed_message_bytes = signed_b64 + verify_key_b64
 
