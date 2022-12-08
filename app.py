@@ -32,7 +32,7 @@ from signal import signal, SIGINT
 from sys import exit
 
 # PyNaCl libsodium library
-from nacl.encoding import Base64Encoder
+from nacl.encoding import HexEncoder
 from nacl_suite import NaclSuite
 from nacl.signing import VerifyKey
 
@@ -335,25 +335,19 @@ def decode_packet(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
 
                 # Print the name/type of the packet
                 Window4.scroll_print(" ", 2)
-                # Window4.ScrollPrint("{}".format(Key).upper(),2)
                 LastPacketType = Key.upper()
 
-                decode_packet("{}/{}".format(PacketParent, Key).upper(),
-                              Value, Filler, FillerChar, PrintSleep=PrintSleep)
+                decode_packet("{}/{}".format(PacketParent, Key).upper(), Value, Filler, FillerChar, PrintSleep=PrintSleep)
 
             else:
                 # Print KEY if not RAW (gotta decode those further, or ignore)
                 if (Key == 'raw'):
-                    Window4.scroll_print(
-                        "{}  RAW value not yet suported by DecodePacket function".format(Filler), 2)
+                    Window4.scroll_print("{}  RAW value not yet suported by DecodePacket function".format(Filler), 2)
                 else:
-                    Window4.scroll_print(
-                        "  {}{}: {}".format(Filler, Key, Value), 2)
+                    Window4.scroll_print("  {}{}: {}".format(Filler, Key, Value), 2)
 
     else:
         Window2.scroll_print("Warning: Not a packet!", 5, TimeStamp=True)
-
-    #Window4.ScrollPrint("{}END PACKET: {} ".format(Filler,PacketParent.upper()),2)
 
 
 def on_receive(packet, interface):
@@ -365,36 +359,36 @@ def on_receive(packet, interface):
 
     Window2.scroll_print("onReceive", 2, TimeStamp=True)
     Window4.scroll_print(" ", 2)
-    Window4.scroll_print(
-        "==Packet RECEIVED======================================", 2)
+    Window4.scroll_print("==Packet RECEIVED======================================", 2)
 
     Decoded = packet.get('decoded')
     UnsignedMessage = Decoded.get('text')
     SignedMessage = Decoded.get('signed-text')
+
     To = packet.get('to')
     From = packet.get('from')
 
-    # Even better method, use this recursively to decode all the packets of packets
+    # Use this recursively to decode all the packets of packets
     decode_packet('MainPacket', packet, Filler='', FillerChar='', PrintSleep=PrintSleep)
 
     if UnsignedMessage:
         Window3.scroll_print("Unsigned message from: {} - {}".format(From, UnsignedMessage), 2, TimeStamp=True)
     elif SignedMessage:
         # Split the concatenated byte string into the message and key
-        signed_b64 = SignedMessage[:-64]
-        verify_key_b64 = SignedMessage[-64:]
+        signed_b64 = SignedMessage[:-31]
+        verify_key_b64 = SignedMessage[-31:]
 
-        print("Signed message length: " + str(len(SignedMessage)) + ", signed_len: " + str(len(signed_b64)) + ", verify_len: " + str(len(verify_key_b64)))
+        print("Verify key length: " + str(len(verify_key_b64)))
 
-        # # Create a VerifyKey object from a base64 serialized public key
-        # verify_key = VerifyKey(verify_key_b64, encoder=Base64Encoder)
-        #
-        # # Check the validity of a message's signature
-        # signature_bytes = Base64Encoder.decode(signed_b64.signature)
-        # verify_key.verify(signed_b64.message, signature_bytes, encoder=Base64Encoder)
+        # Create a VerifyKey object from a base64 serialized public key
+        verify_key = VerifyKey(verify_key_b64, encoder=HexEncoder)
 
-        # text_message = signed_b64.decode('utf-8')
-        Window3.scroll_print("Signed message from: {} - {}".format(From, SignedMessage), 2, TimeStamp=True)
+        # Check the validity of a message's signature
+        signature_bytes = HexEncoder.decode(signed_b64.signature)
+        verify_key.verify(signed_b64.message, signature_bytes, encoder=HexEncoder)
+
+        text_message = signed_b64.decode('utf-8')
+        Window3.scroll_print("Signed message from: {} - {}".format(From, text_message), 2, TimeStamp=True)
 
     Window4.scroll_print("=======================================================", 2)
     Window4.scroll_print(" ", 2)
@@ -714,13 +708,13 @@ def send_signed_message(interface, Message=''):
     text_message_bytes = TheMessage.encode('utf-8')
 
     # Sign a message with the signing key
-    signed_b64 = signing_key.sign(text_message_bytes, encoder=Base64Encoder)
+    signed_b64 = signing_key.sign(text_message_bytes, encoder=HexEncoder)
 
     # Obtain the verify key for a given signing key
     verify_key = signing_key.verify_key
 
     # Serialize the verify key to send it to a third party
-    verify_key_b64 = verify_key.encode(encoder=Base64Encoder)
+    verify_key_b64 = verify_key.encode(encoder=HexEncoder)
 
     signed_message_bytes = signed_b64 + verify_key_b64
 
