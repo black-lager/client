@@ -363,7 +363,7 @@ def on_receive(packet, interface):
 
     Decoded = packet.get('decoded')
     UnsignedMessage = Decoded.get('text')
-    SignedMessage = Decoded.get('signed-text')
+    SignedMessageBytes = Decoded.get('signed-text')
 
     To = packet.get('to')
     From = packet.get('from')
@@ -373,21 +373,19 @@ def on_receive(packet, interface):
 
     if UnsignedMessage:
         Window3.scroll_print("Unsigned message from: {} - {}".format(From, UnsignedMessage), 2, TimeStamp=True)
-    elif SignedMessage:
+    elif SignedMessageBytes:
         # Split the concatenated byte string into the message and key
-        signed_b64 = SignedMessage[:-32]
-        verify_key_b64 = SignedMessage[-32:]
-
-        print("Verify key length: " + str(len(verify_key_b64)))
+        signed_b64 = SignedMessageBytes[:-64]
+        verify_key_b64 = SignedMessageBytes[-64:]
 
         # Create a VerifyKey object from a base64 serialized public key
         verify_key = VerifyKey(verify_key_b64, encoder=HexEncoder)
 
         # Check the validity of a message's signature
-        signature_bytes = HexEncoder.decode(signed_b64.signature)
-        verify_key.verify(signed_b64.message, signature_bytes, encoder=HexEncoder)
+        text_message_bytes = verify_key.verify(signed_b64, encoder=HexEncoder)
 
-        text_message = signed_b64.decode('utf-8')
+
+        text_message = text_message_bytes.decode('utf-8')
         Window3.scroll_print("Signed message from: {} - {}".format(From, text_message), 2, TimeStamp=True)
 
     Window4.scroll_print("=======================================================", 2)
