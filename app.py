@@ -365,7 +365,7 @@ def on_receive(packet, interface):
 
     decoded = packet.get('decoded')
     unsigned_message = decoded.get('text')
-    signed_message = decoded.get('signed-text')
+    portnum = decoded.get('portnum')
 
     sender = packet.get('from')
 
@@ -373,8 +373,9 @@ def on_receive(packet, interface):
     decode_packet('MainPacket', packet, Filler='', FillerChar='', PrintSleep=PrintSleep)
 
     if unsigned_message:
-        Window3.scroll_print("UNSIGNED message from: {} - {}".format(sender, unsigned_message), 2, TimeStamp=True)
-    elif signed_message:
+        Window3.scroll_print("UNSIGNED message from: {} - {}".format(portnum, unsigned_message), 2, TimeStamp=True)
+    elif portnum == "BLACK_LAGER":
+        signed_message = decoded.get('payload')
         # Split the concatenated byte string into the message and key
         signed_b64 = signed_message[:-64]
         verify_key_b64 = signed_message[-64:]
@@ -666,7 +667,7 @@ def send_unsigned_message(interface, Message=''):
 
 
 def send_signed_message(interface, Message=''):
-    Window2.scroll_print("SendSignedMessagePacket", 2)
+    #Window2.scroll_print("SendSignedMessagePacket", 2)
     TheMessage = ''
 
     InputMessageWindow.TextWindow.move(0, 0)
