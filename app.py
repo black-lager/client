@@ -34,7 +34,7 @@ from sys import exit
 # PyNaCl libsodium library
 from nacl_suite import NaclSuite
 
-from nacl.encoding import Base64Encoder
+from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
 
@@ -381,11 +381,11 @@ def on_receive(packet, interface):
         verify_key_b64 = signed_message[-64:]
 
         # Create a VerifyKey object from a base64 serialized public key
-        verify_key = VerifyKey(verify_key_b64, encoder=Base64Encoder)
+        verify_key = VerifyKey(verify_key_b64, encoder=HexEncoder)
 
         # Check the validity of a message's signature
         try:
-            text_message_bytes = verify_key.verify(signed_b64, encoder=Base64Encoder)
+            text_message_bytes = verify_key.verify(signed_b64, encoder=HexEncoder)
             text_message = text_message_bytes.decode('utf-8')
             Window3.scroll_print("VERIFIED SIGNED message from: {} - {}".format(sender, text_message), 2, TimeStamp=True)
         except BadSignatureError:
@@ -703,13 +703,13 @@ def send_signed_message(interface, Message=''):
     text_message_bytes = TheMessage.encode('utf-8')
 
     # Sign a message with the signing key
-    signed_b64 = signing_key.sign(text_message_bytes, encoder=Base64Encoder)
+    signed_b64 = signing_key.sign(text_message_bytes, encoder=HexEncoder)
 
     # Obtain the verify key for a given signing key
     verify_key = signing_key.verify_key
 
     # Serialize the verify key to send it to a third party
-    verify_key_b64 = verify_key.encode(encoder=Base64Encoder)
+    verify_key_b64 = verify_key.encode(encoder=HexEncoder)
 
     signed_message_bytes = signed_b64 + verify_key_b64
 
