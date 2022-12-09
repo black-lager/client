@@ -313,7 +313,7 @@ def decode_packet(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
     if (PacketParent.upper() != 'MAINPACKET'):
         Filler = Filler + FillerChar
 
-    Window4.scroll_print("{}".format(PacketParent).upper(), 2)
+    #Window4.scroll_print("{}".format(PacketParent).upper(), 2)
     update_status_window(NewLastPacketType=PacketParent)
 
     # adjust the input to slow down the output for that cool retro feel
@@ -336,17 +336,17 @@ def decode_packet(PacketParent, Packet, Filler, FillerChar, PrintSleep=0):
             if isinstance(Value, collections.abc.Mapping):
 
                 # Print the name/type of the packet
-                Window4.scroll_print(" ", 2)
+                #Window4.scroll_print(" ", 2)
                 LastPacketType = Key.upper()
 
                 decode_packet("{}/{}".format(PacketParent, Key).upper(), Value, Filler, FillerChar, PrintSleep=PrintSleep)
 
-            else:
-                # Print KEY if not RAW (gotta decode those further, or ignore)
-                if (Key == 'raw'):
-                    Window4.scroll_print("{}  RAW value not yet suported by DecodePacket function".format(Filler), 2)
-                else:
-                    Window4.scroll_print("  {}{}: {}".format(Filler, Key, Value), 2)
+            # else:
+            #     # Print KEY if not RAW (gotta decode those further, or ignore)
+            #     if (Key == 'raw'):
+            #         #Window4.scroll_print("{}  RAW value not yet suported by DecodePacket function".format(Filler), 2)
+            #     else:
+            #         #Window4.scroll_print("  {}{}: {}".format(Filler, Key, Value), 2)
 
     else:
         Window2.scroll_print("Warning: Not a packet!", 5, TimeStamp=True)
@@ -360,8 +360,8 @@ def on_receive(packet, interface):
     PacketsReceived = PacketsReceived + 1
 
     Window2.scroll_print("onReceive", 2, TimeStamp=True)
-    Window4.scroll_print(" ", 2)
-    Window4.scroll_print("==Packet RECEIVED======================================", 2)
+    #Window4.scroll_print(" ", 2)
+    #Window4.scroll_print("==Packet RECEIVED======================================", 2)
 
     decoded = packet.get('decoded')
     unsigned_message = decoded.get('text')
@@ -390,8 +390,8 @@ def on_receive(packet, interface):
         except BadSignatureError:
             Window3.scroll_print("Signature from {} was forged or corrupt".format(sender), 2, TimeStamp=True)
 
-    Window4.scroll_print("=======================================================", 2)
-    Window4.scroll_print(" ", 2)
+    #Window4.scroll_print("=======================================================", 2)
+    #Window4.scroll_print(" ", 2)
 
 
 # called when we (re)connect to the radio
@@ -411,15 +411,13 @@ def on_connection_established(interface, topic=pub.AUTO_TOPIC):
 
         try:
             interface.sendText(Message, wantAck=True)
-            Window4.scroll_print("", 2)
-            Window4.scroll_print(
-                "==Packet SENT==========================================", 3)
-            Window4.scroll_print("To:     {}:".format(To), 3)
-            Window4.scroll_print("From    {}:".format(From), 3)
-            Window4.scroll_print("Message {}:".format(Message), 3)
-            Window4.scroll_print(
-                "=======================================================", 3)
-            Window4.scroll_print("", 2)
+            #Window4.scroll_print("", 2)
+            #Window4.scroll_print("==Packet SENT==========================================", 3)
+            #Window4.scroll_print("To:     {}:".format(To), 3)
+            #Window4.scroll_print("From    {}:".format(From), 3)
+            #Window4.scroll_print("Message {}:".format(Message), 3)
+            #Window4.scroll_print("=======================================================", 3)
+            #Window4.scroll_print("", 2)
 
         except Exception as ErrorMessage:
             TraceMessage = traceback.format_exc()
@@ -441,7 +439,7 @@ def on_node_update(interface, topic=pub.AUTO_TOPIC):
     if (PriorityOutput == False):
         Window2.scroll_print('onNodeUpdated', 2, TimeStamp=True)
         Window1.window_print(1, 4, 'UPDATE RECEIVED', 1, TimeStamp=True)
-        Window4.scroll_print("", 2)
+        #Window4.scroll_print("", 2)
 
 
 def sigint_handler(signal_received, frame):
@@ -650,15 +648,13 @@ def send_unsigned_message(interface, Message=''):
     # Send the message to the device
     interface.sendText(TheMessage, wantAck=True)
 
-    Window4.scroll_print(" ", 2)
-    Window4.scroll_print(
-        "==Unsigned Packet SENT=================================", 3)
-    Window4.scroll_print("To:      All:", 3)
-    Window4.scroll_print("From:    BaseStation", 3)
-    Window4.scroll_print("Message: {}".format(TheMessage), 3)
-    Window4.scroll_print(
-        "=======================================================", 3)
-    Window4.scroll_print(" ", 2)
+    #Window4.scroll_print(" ", 2)
+    #Window4.scroll_print("==Unsigned Packet SENT=================================", 3)
+    #Window4.scroll_print("To:      All:", 3)
+    #Window4.scroll_print("From:    BaseStation", 3)
+    #Window4.scroll_print("Message: {}".format(TheMessage), 3)
+    #Window4.scroll_print("=======================================================", 3)
+    #Window4.scroll_print(" ", 2)
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
@@ -718,13 +714,13 @@ def send_signed_message(interface, Message=''):
 
     interface.sendSignedText(signed_message_bytes, wantAck=True)
 
-    Window4.scroll_print(" ", 2)
-    Window4.scroll_print("==Signed Packet SENT===================================", 3)
-    Window4.scroll_print("To:      All:", 3)
-    Window4.scroll_print("From:    BaseStation", 3)
-    Window4.scroll_print("Message: {}".format(TheMessage), 3)
-    Window4.scroll_print("=======================================================", 3)
-    Window4.scroll_print(" ", 2)
+    #Window4.scroll_print(" ", 2)
+    #Window4.scroll_print("==Signed Packet SENT===================================", 3)
+    #Window4.scroll_print("To:      All:", 3)
+    #Window4.scroll_print("From:    BaseStation", 3)
+    #Window4.scroll_print("Message: {}".format(TheMessage), 3)
+    #Window4.scroll_print("=======================================================", 3)
+    #Window4.scroll_print(" ", 2)
 
     SendMessageWindow.clear()
     SendMessageWindow.TitleColor = 2
