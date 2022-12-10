@@ -373,7 +373,7 @@ def on_receive(packet, interface):
     decode_packet('MainPacket', packet, Filler='', FillerChar='', PrintSleep=PrintSleep)
 
     if unsigned_message:
-        Window3.scroll_print("UNSIGNED message from: {} - {}".format(portnum, unsigned_message), 2, TimeStamp=True)
+        Window3.scroll_print("UNSIGNED message from: {} - {}".format(sender, unsigned_message), 2, TimeStamp=True)
     elif portnum == "BLACK_LAGER":
         signed_message = decoded.get('payload')
         # Split the concatenated byte string into the message and key
